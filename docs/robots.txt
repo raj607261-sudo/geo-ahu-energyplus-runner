@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://raj607261-sudo.github.io/geo-ahu-energyplus-runner/sitemap.xml

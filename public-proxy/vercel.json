@@ -1,0 +1,17 @@
+{
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "https://geo-ahu-calculator.raj607261.chatgpt.site/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "all" },
+        { "key": "Cache-Control", "value": "public, s-maxage=300, stale-while-revalidate=86400" }
+      ]
+    }
+  ]
+}

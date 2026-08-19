@@ -1,0 +1,10 @@
+# Geo-AHU
+
+Public Geo-AHU calculator and EnergyPlus simulation interface.
+
+Primary public simulation URL:
+https://raj607261-sudo.github.io/geo-ahu-energyplus-runner/simulation/
+
+The site presents Geo-AHU cold-storage design inputs and EnergyPlus-based comparison outputs for conventional versus geothermal-assisted refrigeration concepts.
+
+Crawling and indexing are allowed.

@@ -34,8 +34,20 @@ function findColumn(headers, terms, excluded = []) {
   });
 }
 
+function findColumns(headers, terms, excluded = []) {
+  return headers.reduce((indexes, header, index) => {
+    const lowered = header.toLowerCase();
+    if (terms.every((term) => lowered.includes(term)) && excluded.every((term) => !lowered.includes(term))) indexes.push(index);
+    return indexes;
+  }, []);
+}
+
 function valueAt(row, index) {
   return index >= 0 ? Number(row[index]) || 0 : 0;
+}
+
+function sumAt(row, indexes) {
+  return indexes.reduce((sum, index) => sum + valueAt(row, index), 0);
 }
 
 function parseMonth(dateTime) {
@@ -51,22 +63,22 @@ export function parseCsv(text) {
     facility: findColumn(headers, ["electricity:facility", "[j]"]),
     refrigeration: findColumn(headers, ["refrigeration:electricity", "[j]"]),
     pumpsMeter: findColumn(headers, ["pumps:electricity", "[j]"]),
-    cooling: findColumn(headers, ["walk in evaporator total cooling energy", "[j]"]),
-    rack: findColumn(headers, ["compressor rack electricity energy", "[j]"]),
-    compressor: findColumn(headers, ["compressor rack electricity energy", "[j]"]),
-    condenserFan: findColumn(headers, ["compressor rack condenser fan electricity energy", "[j]"]),
-    walkinFan: findColumn(headers, ["walk in fan electricity energy", "[j]"]),
-    lights: findColumn(headers, ["walk in lighting electricity energy", "[j]"]),
-    defrost: findColumn(headers, ["walk in defrost electricity energy", "[j]"]),
-    ancillary: findColumn(headers, ["walk in ancillary electricity energy", "[j]"]),
-    pump: findColumn(headers, ["pump electricity energy", "[j]"]),
+    cooling: findColumns(headers, ["walk in evaporator total cooling energy", "[j]"]),
+    rack: findColumns(headers, ["compressor rack electricity energy", "[j]"]),
+    compressor: findColumns(headers, ["compressor rack electricity energy", "[j]"]),
+    condenserFan: findColumns(headers, ["compressor rack condenser fan electricity energy", "[j]"]),
+    walkinFan: findColumns(headers, ["walk in fan electricity energy", "[j]"]),
+    lights: findColumns(headers, ["walk in lighting electricity energy", "[j]"]),
+    defrost: findColumns(headers, ["walk in defrost electricity energy", "[j]"]),
+    ancillary: findColumns(headers, ["walk in ancillary electricity energy", "[j]"]),
+    pump: findColumns(headers, ["pump electricity energy", "[j]"]),
     outdoor: findColumn(headers, ["site outdoor air drybulb temperature", "[c]"]),
     zone: findColumn(headers, ["zone mean air temperature", "[c]"]),
     groundIn: findColumn(headers, ["ground heat exchanger inlet temperature", "[c]"]),
     groundOut: findColumn(headers, ["ground heat exchanger outlet temperature", "[c]"]),
     groundRate: findColumn(headers, ["ground heat exchanger heat transfer rate", "[w]"]),
   };
-  if (indexes.facility < 0 && indexes.refrigeration < 0 && indexes.rack < 0) {
+  if (indexes.facility < 0 && indexes.refrigeration < 0 && indexes.rack.length === 0) {
     throw new Error(`Required electricity output was not found. CSV columns: ${headers.join(" | ")}`);
   }
 
@@ -85,8 +97,8 @@ export function parseCsv(text) {
   for (let index = 1; index < lines.length; index += 1) {
     const row = csvLine(lines[index]);
     const month = parseMonth(row[0]);
-    const facilityJ = indexes.facility >= 0 ? valueAt(row, indexes.facility) : (indexes.refrigeration >= 0 ? valueAt(row, indexes.refrigeration) + valueAt(row, indexes.pumpsMeter) : valueAt(row, indexes.rack) + valueAt(row, indexes.pump));
-    const rowCoolingJ = valueAt(row, indexes.cooling);
+    const facilityJ = indexes.facility >= 0 ? valueAt(row, indexes.facility) : (indexes.refrigeration >= 0 ? valueAt(row, indexes.refrigeration) + valueAt(row, indexes.pumpsMeter) : sumAt(row, indexes.rack) + sumAt(row, indexes.pump));
+    const rowCoolingJ = sumAt(row, indexes.cooling);
     const rowKw = facilityJ / JOULES_PER_KWH;
     electricityJ += facilityJ;
     coolingJ += rowCoolingJ;
@@ -95,13 +107,13 @@ export function parseCsv(text) {
     monthly[month].electricityKwh += facilityJ / JOULES_PER_KWH;
     monthly[month].coolingKwh += rowCoolingJ / JOULES_PER_KWH;
     monthly[month].peakKw = Math.max(monthly[month].peakKw, rowKw);
-    endUsesJ.compressor += valueAt(row, indexes.compressor) || valueAt(row, indexes.rack);
-    endUsesJ.condenserFan += valueAt(row, indexes.condenserFan);
-    endUsesJ.walkinFan += valueAt(row, indexes.walkinFan);
-    endUsesJ.lights += valueAt(row, indexes.lights);
-    endUsesJ.defrost += valueAt(row, indexes.defrost);
-    endUsesJ.ancillary += valueAt(row, indexes.ancillary);
-    endUsesJ.pumps += valueAt(row, indexes.pump) || valueAt(row, indexes.pumpsMeter);
+    endUsesJ.compressor += sumAt(row, indexes.compressor) || sumAt(row, indexes.rack);
+    endUsesJ.condenserFan += sumAt(row, indexes.condenserFan);
+    endUsesJ.walkinFan += sumAt(row, indexes.walkinFan);
+    endUsesJ.lights += sumAt(row, indexes.lights);
+    endUsesJ.defrost += sumAt(row, indexes.defrost);
+    endUsesJ.ancillary += sumAt(row, indexes.ancillary);
+    endUsesJ.pumps += sumAt(row, indexes.pump) || valueAt(row, indexes.pumpsMeter);
     outdoorMaximum = Math.max(outdoorMaximum, valueAt(row, indexes.outdoor));
     if (indexes.zone >= 0) {
       const zone = valueAt(row, indexes.zone);
@@ -226,7 +238,7 @@ export async function runEnergyPlusPair(input, options = {}) {
       annualCostInr: geo.electricityKwh * normalized.tariff,
       annualCostSavingInr: savingKwh * normalized.tariff,
       annualCarbonKg: geo.electricityKwh * normalized.carbonFactor,
-      euiKwhM2: geo.electricityKwh / normalized.floorArea,
+      euiKwhM2: geo.electricityKwh / normalized.totalFloorArea,
     },
     artifacts: {
       manifest: "manifest.json",
@@ -242,4 +254,3 @@ export function artifactStream(runDirectory, relativePath) {
   if (!resolved.startsWith(path.resolve(runDirectory) + path.sep)) throw new Error("Invalid artifact path");
   return createReadStream(resolved);
 }
-

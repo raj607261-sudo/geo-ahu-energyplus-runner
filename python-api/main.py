@@ -77,6 +77,8 @@ def calculate(c: Conditions):
     base_comp=design/base["cop"]
     mc_comp=design/mc["cop"]
     base_energy=(base_comp+.35)*c.hours
-    mc_energy=(mc_comp+.35+c.aux)*c.hours
+    # The BPHE water loop replaces the conventional air condenser and its fan.
+    # c.aux is the total M-Cycle condenser-side pump and blower allowance.
+    mc_energy=(mc_comp+c.aux)*c.hours
     result={"load":load,"product":product,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
     return result

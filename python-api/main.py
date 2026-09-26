@@ -28,6 +28,12 @@ class Conditions(BaseModel):
     wettingPump: float = Field(.07, ge=0, le=1)
     waterFlow: float = Field(60, ge=5, le=200)
     bpheApproach: float = Field(4, ge=1, le=12)
+    mapHotCond: float = Field(49, ge=30, le=65)
+    mapHotCapacity: float = Field(7, ge=.5, le=30)
+    mapHotPower: float = Field(3.3, ge=.1, le=20)
+    mapLowCond: float = Field(30, ge=20, le=50)
+    mapLowCapacity: float = Field(9.1, ge=.5, le=30)
+    mapLowPower: float = Field(2.15, ge=.1, le=20)
     tariff: float = Field(8, ge=0, le=30)
 
 def sat_pressure(t):
@@ -41,23 +47,40 @@ def enthalpy(t, w):
     return 1.006*t+w*(2501+1.86*t)
 
 def cycle(evap, cond):
-    fluid = "R134a"
+    fluid = "R410A"
     pe = PropsSI("P", "T", evap+273.15, "Q", 1, fluid)
     pc = PropsSI("P", "T", cond+273.15, "Q", 0, fluid)
     h1 = PropsSI("Hmass", "P", pe, "T", evap+273.15+5, fluid)
     s1 = PropsSI("Smass", "P", pe, "T", evap+273.15+5, fluid)
+    rho = PropsSI("Dmass", "P", pe, "T", evap+273.15+5, fluid)
     h2s = PropsSI("Hmass", "P", pc, "Smass", s1, fluid)
     h3 = PropsSI("Hmass", "P", pc, "T", cond+273.15-3, fluid)
     qe = h1-h3
     work = (h2s-h1)/(.68*.90)
     if qe <= 0 or work <= 0:
         raise ValueError("Refrigerant state outside model range")
-    return {"cop":qe/work, "pressure":pc/1e5}
+    return {"cop":qe/work, "pressure":pc/1e5, "qe":qe, "work":work, "rho":rho}
+
+def compressor_map(c, evap, cond):
+    # The two user-supplied operating points describe ONE compressor at
+    # 1 C evaporating temperature. CoolProp corrects suction density,
+    # refrigeration effect and specific work if the room target changes.
+    blend=(cond-c.mapLowCond)/(c.mapHotCond-c.mapLowCond)
+    cap=c.mapLowCapacity+(c.mapHotCapacity-c.mapLowCapacity)*blend
+    power=c.mapLowPower+(c.mapHotPower-c.mapLowPower)*blend
+    actual=cycle(evap,cond)
+    reference=cycle(1,cond)
+    mass_ratio=actual["rho"]/reference["rho"]
+    cap*=mass_ratio*actual["qe"]/reference["qe"]
+    power*=mass_ratio*actual["work"]/reference["work"]
+    if cap<=0 or power<=0:
+        raise ValueError("Compressor map extrapolation is outside its range")
+    return {"capacity":cap,"power":power,"cop":cap/power,"pressure":actual["pressure"]}
 
 @app.post("/api/calculate")
 def calculate(c: Conditions):
-    if c.wbt > c.dbt or c.arrival < c.room:
-        raise HTTPException(422, "Wet bulb must be <= dry bulb; arrival must be >= room target")
+    if c.wbt > c.dbt or c.arrival < c.room or c.mapHotCond<=c.mapLowCond:
+        raise HTTPException(422, "Wet bulb <= dry bulb, arrival >= room target, and hot map temperature > low map temperature")
     floor=c.area*.092903
     h=c.height*.3048
     side=4*math.sqrt(floor)*h
@@ -86,30 +109,35 @@ def calculate(c: Conditions):
     dewpoint=243.04*log_vapor/(17.625-log_vapor)
     sink=max(c.wbt-c.subwb,dewpoint+1)
     try:
-        base=cycle(evap,air_cond)
+        base=compressor_map(c,evap,air_cond)
         # Condenser rejects evaporator heat plus compressor shaft work. The
         # loop warms across the BPHE; condensing must exceed HOT water outlet.
         mc_cond=sink+6
         for _ in range(20):
-            mc=cycle(evap,mc_cond)
-            mc_peak_comp=design/mc["cop"]
-            reject=design+mc_peak_comp*.90
+            mc=compressor_map(c,evap,mc_cond)
+            reject=mc["capacity"]+mc["power"]*.90
             water_rise=reject*60/(c.waterFlow*4.186)
             updated=sink+water_rise+c.bpheApproach
             if abs(updated-mc_cond)<.00001:
                 mc_cond=updated
                 break
             mc_cond=updated
-        mc=cycle(evap,mc_cond)
+        mc=compressor_map(c,evap,mc_cond)
     except ValueError as exc:
         raise HTTPException(422,str(exc)) from exc
-    base_comp=design/base["cop"]
-    mc_comp=design/mc["cop"]
-    reject=design+mc_comp*.90
+    base_comp=base["power"]
+    mc_comp=mc["power"]
+    reject=mc["capacity"]+mc_comp*.90
     water_rise=reject*60/(c.waterFlow*4.186)
-    base_energy=daily_thermal/base["cop"]+.35*c.hours
+    base_run=daily_thermal/base["capacity"]
+    mc_run=daily_thermal/mc["capacity"]
+    base_pull=0 if crop_energy==0 else crop_energy/(base["capacity"]-standing) if base["capacity"]>standing else None
+    mc_pull=0 if crop_energy==0 else crop_energy/(mc["capacity"]-standing) if mc["capacity"]>standing else None
+    base_energy=(base_comp+.35)*base_run
     # The BPHE water loop replaces the conventional air condenser and its fan.
     aux_total=c.blower+c.mainPump+c.wettingPump
-    mc_energy=daily_thermal/mc["cop"]+aux_total*c.hours
-    result={"load":load,"product":product,"cropEnergy":crop_energy,"cropPeak":crop_peak,"standing":standing,"dailyThermal":daily_thermal,"peakLoad":peak_load,"design":design,"reject":reject,"waterRise":water_rise,"waterReturn":sink+water_rise,"auxTotal":aux_total,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"dewpoint":dewpoint,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
+    mc_energy=(mc_comp+aux_total)*mc_run
+    feasible=(base_run<=c.hours and mc_run<=c.hours and base_pull is not None and mc_pull is not None and base_pull<=c.pullHours and mc_pull<=c.pullHours)
+    extrapolated=(air_cond<c.mapLowCond or air_cond>c.mapHotCond or mc_cond<c.mapLowCond or mc_cond>c.mapHotCond)
+    result={"load":load,"product":product,"cropEnergy":crop_energy,"cropPeak":crop_peak,"standing":standing,"dailyThermal":daily_thermal,"peakLoad":peak_load,"design":design,"reject":reject,"waterRise":water_rise,"waterReturn":sink+water_rise,"auxTotal":aux_total,"baseCapacity":base["capacity"],"mcCapacity":mc["capacity"],"baseRun":base_run,"mcRun":mc_run,"basePull":base_pull,"mcPull":mc_pull,"feasible":feasible,"mapExtrapolated":extrapolated,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"dewpoint":dewpoint,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
     return result

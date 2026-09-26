@@ -129,15 +129,18 @@ def calculate(c: Conditions):
     mc_comp=mc["power"]
     reject=mc["capacity"]+mc_comp*.90
     water_rise=reject*60/(c.waterFlow*4.186)
-    base_run=daily_thermal/base["capacity"]
-    mc_run=daily_thermal/mc["capacity"]
-    base_pull=0 if crop_energy==0 else crop_energy/(base["capacity"]-standing) if base["capacity"]>standing else None
-    mc_pull=0 if crop_energy==0 else crop_energy/(mc["capacity"]-standing) if mc["capacity"]>standing else None
-    base_energy=(base_comp+.35)*base_run
+    # Equal-service comparison: both operate for the entered hours and meet
+    # the same pull-down deadline by assumed ideal part-load modulation.
+    # Nameplate map capacity is checked; part-load COP is held at map COP.
+    base_run=mc_run=c.hours
+    base_pull=mc_pull=c.pullHours
+    base_effective_comp=daily_thermal/base["cop"]/c.hours
+    mc_effective_comp=daily_thermal/mc["cop"]/c.hours
+    base_energy=(base_effective_comp+.35)*base_run
     # The BPHE water loop replaces the conventional air condenser and its fan.
     aux_total=c.blower+c.mainPump+c.wettingPump
-    mc_energy=(mc_comp+aux_total)*mc_run
-    feasible=(base_run<=c.hours and mc_run<=c.hours and base_pull is not None and mc_pull is not None and base_pull<=c.pullHours and mc_pull<=c.pullHours)
+    mc_energy=(mc_effective_comp+aux_total)*mc_run
+    feasible=(base["capacity"]>=design and mc["capacity"]>=design)
     extrapolated=(air_cond<c.mapLowCond or air_cond>c.mapHotCond or mc_cond<c.mapLowCond or mc_cond>c.mapHotCond)
-    result={"load":load,"product":product,"cropEnergy":crop_energy,"cropPeak":crop_peak,"standing":standing,"dailyThermal":daily_thermal,"peakLoad":peak_load,"design":design,"reject":reject,"waterRise":water_rise,"waterReturn":sink+water_rise,"auxTotal":aux_total,"baseCapacity":base["capacity"],"mcCapacity":mc["capacity"],"baseRun":base_run,"mcRun":mc_run,"basePull":base_pull,"mcPull":mc_pull,"feasible":feasible,"mapExtrapolated":extrapolated,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"dewpoint":dewpoint,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
+    result={"load":load,"product":product,"cropEnergy":crop_energy,"cropPeak":crop_peak,"standing":standing,"dailyThermal":daily_thermal,"peakLoad":peak_load,"design":design,"reject":reject,"waterRise":water_rise,"waterReturn":sink+water_rise,"auxTotal":aux_total,"baseCapacity":base["capacity"],"mcCapacity":mc["capacity"],"baseRun":base_run,"mcRun":mc_run,"basePull":base_pull,"mcPull":mc_pull,"baseEffectiveComp":base_effective_comp,"mcEffectiveComp":mc_effective_comp,"feasible":feasible,"mapExtrapolated":extrapolated,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"dewpoint":dewpoint,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
     return result

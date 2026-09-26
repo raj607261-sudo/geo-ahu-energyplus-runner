@@ -23,8 +23,10 @@ class Conditions(BaseModel):
     wbt: float = Field(27, ge=0, le=40)
     subwb: float = Field(3.5, ge=0, le=6)
     hours: float = Field(20, ge=8, le=24)
-    aux: float = Field(.55, ge=0, le=5)
-    waterFlow: float = Field(50, ge=5, le=200)
+    blower: float = Field(.40, ge=0, le=2)
+    mainPump: float = Field(.25, ge=0, le=2)
+    wettingPump: float = Field(.07, ge=0, le=1)
+    waterFlow: float = Field(60, ge=5, le=200)
     bpheApproach: float = Field(4, ge=1, le=12)
     tariff: float = Field(8, ge=0, le=30)
 
@@ -107,7 +109,7 @@ def calculate(c: Conditions):
     water_rise=reject*60/(c.waterFlow*4.186)
     base_energy=daily_thermal/base["cop"]+.35*c.hours
     # The BPHE water loop replaces the conventional air condenser and its fan.
-    # c.aux is the total M-Cycle condenser-side pump and blower allowance.
-    mc_energy=daily_thermal/mc["cop"]+c.aux*c.hours
-    result={"load":load,"product":product,"cropEnergy":crop_energy,"cropPeak":crop_peak,"standing":standing,"dailyThermal":daily_thermal,"peakLoad":peak_load,"design":design,"reject":reject,"waterRise":water_rise,"waterReturn":sink+water_rise,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"dewpoint":dewpoint,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
+    aux_total=c.blower+c.mainPump+c.wettingPump
+    mc_energy=daily_thermal/mc["cop"]+aux_total*c.hours
+    result={"load":load,"product":product,"cropEnergy":crop_energy,"cropPeak":crop_peak,"standing":standing,"dailyThermal":daily_thermal,"peakLoad":peak_load,"design":design,"reject":reject,"waterRise":water_rise,"waterReturn":sink+water_rise,"auxTotal":aux_total,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"dewpoint":dewpoint,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
     return result

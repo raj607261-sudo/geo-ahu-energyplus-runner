@@ -19,7 +19,7 @@ class Conditions(BaseModel):
     ach: float = Field(.3, ge=0, le=4)
     dbt: float = Field(40, ge=5, le=50)
     wbt: float = Field(27, ge=0, le=40)
-    eff: float = Field(65, ge=20, le=90)
+    subwb: float = Field(3.5, ge=0, le=6)
     hours: float = Field(20, ge=8, le=24)
     aux: float = Field(.55, ge=0, le=5)
     tariff: float = Field(8, ge=0, le=30)
@@ -67,7 +67,11 @@ def calculate(c: Conditions):
     design=load*24/c.hours
     evap=c.room-7
     air_cond=c.dbt+9
-    sink=c.wbt+2+(c.dbt-c.wbt)*(1-c.eff/100)*.35
+    # A user-specified sub-wet-bulb WATER outlet is a design scenario, not
+    # a prediction of M-Cycle tower capacity. Keep it above estimated dew point.
+    log_vapor=math.log(max(e_out,.001)/.61094)
+    dewpoint=243.04*log_vapor/(17.625-log_vapor)
+    sink=max(c.wbt-c.subwb,dewpoint+1)
     mc_cond=sink+6
     try:
         base=cycle(evap,air_cond)
@@ -80,5 +84,5 @@ def calculate(c: Conditions):
     # The BPHE water loop replaces the conventional air condenser and its fan.
     # c.aux is the total M-Cycle condenser-side pump and blower allowance.
     mc_energy=(mc_comp+c.aux)*c.hours
-    result={"load":load,"product":product,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
+    result={"load":load,"product":product,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"dewpoint":dewpoint,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
     return result

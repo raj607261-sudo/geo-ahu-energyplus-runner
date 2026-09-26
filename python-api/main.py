@@ -22,7 +22,6 @@ class Conditions(BaseModel):
     dbt: float = Field(40, ge=5, le=50)
     wbt: float = Field(27, ge=0, le=40)
     subwb: float = Field(3.5, ge=0, le=6)
-    hours: float = Field(20, ge=8, le=24)
     blower: float = Field(.40, ge=0, le=2)
     mainPump: float = Field(.25, ge=0, le=2)
     wettingPump: float = Field(.07, ge=0, le=1)
@@ -94,13 +93,11 @@ def calculate(c: Conditions):
     product=crop_energy/24
     respiration=c.stored*1000*.025/1000
     standing=wall_roof+ground+infiltration+respiration
-    daily_thermal=standing*24+crop_energy
-    load=daily_thermal/24
     crop_peak=crop_energy/c.pullHours
     peak_load=standing+crop_peak
-    # Daily kWh and peak kW serve different purposes. The unit must handle
-    # the requested pull-down window and the daily duty over available hours.
-    design=max(peak_load,daily_thermal/c.hours)
+    # Compare the same crop batch over the same pull-down window.
+    event_thermal=crop_energy+standing*c.pullHours
+    design=peak_load
     evap=c.room-7
     air_cond=c.dbt+9
     # A user-specified sub-wet-bulb WATER outlet is a design scenario, not
@@ -129,18 +126,15 @@ def calculate(c: Conditions):
     mc_comp=mc["power"]
     reject=mc["capacity"]+mc_comp*.90
     water_rise=reject*60/(c.waterFlow*4.186)
-    # Equal-service comparison: both operate for the entered hours and meet
-    # the same pull-down deadline by assumed ideal part-load modulation.
-    # Nameplate map capacity is checked; part-load COP is held at map COP.
-    base_run=mc_run=c.hours
-    base_pull=mc_pull=c.pullHours
-    base_effective_comp=daily_thermal/base["cop"]/c.hours
-    mc_effective_comp=daily_thermal/mc["cop"]/c.hours
-    base_energy=(base_effective_comp+.35)*base_run
+    # Equal pull-down comparison over c.pullHours, assuming ideal modulation
+    # at map COP; rated capacity must meet event heat/c.pullHours.
+    base_effective_comp=event_thermal/base["cop"]/c.pullHours
+    mc_effective_comp=event_thermal/mc["cop"]/c.pullHours
+    base_energy=(base_effective_comp+.35)*c.pullHours
     # The BPHE water loop replaces the conventional air condenser and its fan.
     aux_total=c.blower+c.mainPump+c.wettingPump
-    mc_energy=(mc_effective_comp+aux_total)*mc_run
+    mc_energy=(mc_effective_comp+aux_total)*c.pullHours
     feasible=(base["capacity"]>=design and mc["capacity"]>=design)
     extrapolated=(air_cond<c.mapLowCond or air_cond>c.mapHotCond or mc_cond<c.mapLowCond or mc_cond>c.mapHotCond)
-    result={"load":load,"product":product,"cropEnergy":crop_energy,"cropPeak":crop_peak,"standing":standing,"dailyThermal":daily_thermal,"peakLoad":peak_load,"design":design,"reject":reject,"waterRise":water_rise,"waterReturn":sink+water_rise,"auxTotal":aux_total,"baseCapacity":base["capacity"],"mcCapacity":mc["capacity"],"baseRun":base_run,"mcRun":mc_run,"basePull":base_pull,"mcPull":mc_pull,"baseEffectiveComp":base_effective_comp,"mcEffectiveComp":mc_effective_comp,"feasible":feasible,"mapExtrapolated":extrapolated,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"dewpoint":dewpoint,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
+    result={"product":product,"cropEnergy":crop_energy,"cropPeak":crop_peak,"standing":standing,"eventThermal":event_thermal,"peakLoad":peak_load,"design":design,"reject":reject,"waterRise":water_rise,"waterReturn":sink+water_rise,"auxTotal":aux_total,"baseCapacity":base["capacity"],"mcCapacity":mc["capacity"],"baseEffectiveComp":base_effective_comp,"mcEffectiveComp":mc_effective_comp,"feasible":feasible,"mapExtrapolated":extrapolated,"wallRoof":wall_roof,"ground":ground,"infiltration":infiltration,"respiration":respiration,"sink":sink,"dewpoint":dewpoint,"airCond":air_cond,"mcCond":mc_cond,"baseComp":base_comp,"mcComp":mc_comp,"baseEnergy":base_energy,"mcEnergy":mc_energy,"baseCop":base["cop"],"mcCop":mc["cop"],"basePressure":base["pressure"],"mcPressure":mc["pressure"],"saving":(base_energy-mc_energy)/base_energy*100,"engine":"Python + CoolProp 7.2.0"}
     return result

@@ -37,6 +37,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.INVENTION_DATABASE_URL }}
           STATE_PATH: state/memory.json
+          SUPABASE_PROJECT_REF: krjwxsapcskbxrvmncba
         run: python -m engine.run
       - name: Persist public screening history
         run: |

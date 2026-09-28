@@ -3,6 +3,7 @@ import json
 import math
 import os
 import random
+from pathlib import Path
 from datetime import datetime, timezone
 
 TARGET_W = 5275  # 1.5 refrigeration tons, thermal
@@ -79,10 +80,10 @@ def score(item):
 
 
 def run():
-    import psycopg
     dsn = os.environ.get("DATABASE_URL")
     if not dsn:
-        raise SystemExit("DATABASE_URL required; refusing ephemeral memory")
+        return run_file_memory()
+    import psycopg
     with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:
             cur.execute("""CREATE TABLE IF NOT EXISTS runs (
@@ -116,6 +117,29 @@ def run():
                             (run_id, rank, json.dumps(item), score(item)))
             print(json.dumps({"generation": generation, "candidates": len(pool),
                               "best": best, "note": note}, indent=2))
+
+
+def run_file_memory():
+    """Durable Git-backed fallback; workflow commits state after each run."""
+    path = Path(os.environ.get("STATE_PATH", "state/memory.json"))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    memory = json.loads(path.read_text()) if path.exists() else {"runs": []}
+    generation = len(memory["runs"]) + 1
+    pool = list(candidates(generation))
+    if memory["runs"]:
+        pool.extend(evolve(memory["runs"][-1]["best"], generation))
+    valid = [c for c in pool if c["screening_pass"]]
+    best = max(valid or pool, key=score)
+    run_record = {"generation": generation, "created_at": datetime.now(timezone.utc).isoformat(),
+                  "best": best, "candidate_count": len(pool), "screening_pass": bool(valid),
+                  "failure_summary": {reason: sum(reason in c["reasons"] for c in pool)
+                                      for reason in sorted({r for c in pool for r in c["reasons"]})},
+                  "note": "Unvalidated screening; physical measurements required."}
+    memory["runs"].append(run_record)
+    temp = path.with_suffix(".tmp")
+    temp.write_text(json.dumps(memory, indent=2) + "\n")
+    temp.replace(path)
+    print(json.dumps(run_record, indent=2))
 
 
 if __name__ == "__main__":

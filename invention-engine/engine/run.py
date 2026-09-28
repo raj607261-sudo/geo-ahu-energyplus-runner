@@ -89,7 +89,13 @@ def run():
     if not dsn:
         return run_file_memory()
     import psycopg
-    with psycopg.connect(dsn) as conn:
+    from psycopg.conninfo import conninfo_to_dict
+    params = conninfo_to_dict(dsn)
+    project_ref = os.environ.get("SUPABASE_PROJECT_REF")
+    if (project_ref and params.get("user") == "postgres"
+            and params.get("host", "").endswith(".pooler.supabase.com")):
+        params["user"] = "postgres." + project_ref
+    with psycopg.connect(**params) as conn:
         with conn.cursor() as cur:
             cur.execute("""CREATE TABLE IF NOT EXISTS runs (
                 id BIGSERIAL PRIMARY KEY, created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

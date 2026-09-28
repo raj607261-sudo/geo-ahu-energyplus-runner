@@ -7,6 +7,12 @@ stores every candidate, reason and score in PostgreSQL. Later runs also generate
 60 mutations of the previous best. It exits; the next run resumes with a new
 seed from the saved generation number. No ChatGPT Schedule is involved.
 
+Without `DATABASE_URL`, the GitHub Actions workflow writes `state/memory.json`
+and commits it to the repository after each run. This is durable public Git
+memory for a free trial, not PostgreSQL. Never place personal information or
+secrets in the state file. Set `DATABASE_URL` to migrate the execution path to
+PostgreSQL; migration of previous JSON history is not automatic.
+
 **Status:** autonomous numerical search prototype, not a self-directed literature
 researcher, CFD model, validated M-Cycle simulator or proven AC design. Dew-point
 effectiveness is an assumed input. The face-area/pressure-drop model is a

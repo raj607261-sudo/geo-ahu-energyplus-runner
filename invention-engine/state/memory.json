@@ -1,0 +1,48 @@
+{
+  "runs": [
+    {
+      "generation": 1,
+      "created_at": "2026-09-28T05:46:45.430070+00:00",
+      "best": {
+        "geometry": {
+          "gap_mm": 7.57,
+          "length_m": 0.5,
+          "area_m2": 15.8,
+          "flow_m3s": 0.891,
+          "working_fraction": 0.3,
+          "assumed_dp_effectiveness": 0.84
+        },
+        "velocity_mps": 3.72,
+        "core_dp_pa": 31.2,
+        "fan_w": 79,
+        "pump_w": 35.0,
+        "climates": {
+          "dry": {
+            "supply_c": 23.2,
+            "capacity_w": 12228,
+            "dew_point_c": 20.0,
+            "wet_bulb_c": 22.0
+          },
+          "humid": {
+            "supply_c": 27.44,
+            "capacity_w": 5502,
+            "dew_point_c": 26.0,
+            "wet_bulb_c": 28.0
+          }
+        },
+        "screening_pass": true,
+        "reasons": [],
+        "status": "UNVALIDATED ESTIMATE; geometry/effectiveness/wetting need prototype tests"
+      },
+      "candidate_count": 120,
+      "screening_pass": true,
+      "failure_summary": {
+        "dry climate capacity <1.5 TR": 19,
+        "estimated core pressure drop >100 Pa": 72,
+        "estimated electric input >450 W": 41,
+        "humid climate capacity <1.5 TR": 113
+      },
+      "note": "Unvalidated screening; physical measurements required."
+    }
+  ]
+}

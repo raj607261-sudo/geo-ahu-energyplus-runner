@@ -3,8 +3,14 @@ on:
   schedule:
     - cron: '17 */6 * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'invention-engine/engine/**'
+      - 'invention-engine/tests/**'
+      - '.github/workflows/kissanshroom-rnd.yml'
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: kissanshroom-rnd-cycle
   cancel-in-progress: false
@@ -26,4 +32,14 @@ jobs:
       - name: Run R&D generation
         env:
           DATABASE_URL: ${{ secrets.INVENTION_DATABASE_URL }}
+          STATE_PATH: state/memory.json
         run: python -m engine.run
+      - name: Persist public screening history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/memory.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Record R&D screening generation"
+            git push
+          fi

@@ -143,6 +143,59 @@
       },
       "note": "Unvalidated screening; physical measurements required.",
       "next_problem": "humid climate capacity <1.5 TR"
+    },
+    {
+      "generation": 4,
+      "created_at": "2026-09-28T05:57:57.354673+00:00",
+      "best": {
+        "geometry": {
+          "gap_mm": 9.911634510521647,
+          "length_m": 0.31957214383090005,
+          "area_m2": 17.588258103599564,
+          "flow_m3s": 1.006489580850578,
+          "working_fraction": 0.3044404195197703,
+          "assumed_dp_effectiveness": 0.75
+        },
+        "velocity_mps": 1.85,
+        "core_dp_pa": 7.2,
+        "fan_w": 21,
+        "pump_w": 35.0,
+        "climates": {
+          "dry": {
+            "supply_c": 25.0,
+            "capacity_w": 12254,
+            "dew_point_c": 20.0,
+            "wet_bulb_c": 22.0
+          },
+          "humid": {
+            "supply_c": 28.25,
+            "capacity_w": 5514,
+            "dew_point_c": 26.0,
+            "wet_bulb_c": 28.0
+          }
+        },
+        "screening_pass": true,
+        "reasons": [],
+        "status": "UNVALIDATED AIR-STREAM ESTIMATE; not room cooling capacity",
+        "unverified_gates": [
+          "room temperature/RH",
+          "working-air exhaust outside",
+          "water use",
+          "wetting/leakage",
+          "BOM",
+          "measured effectiveness"
+        ]
+      },
+      "candidate_count": 180,
+      "screening_pass": true,
+      "failure_summary": {
+        "dry climate capacity <1.5 TR": 21,
+        "estimated core pressure drop >100 Pa": 67,
+        "estimated electric input >450 W": 48,
+        "humid climate capacity <1.5 TR": 137
+      },
+      "note": "Unvalidated screening; physical measurements required.",
+      "next_problem": "humid climate capacity <1.5 TR"
     }
   ],
   "research_leads": [

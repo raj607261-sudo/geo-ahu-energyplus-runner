@@ -36,8 +36,9 @@ GitHub-hosted runners are free for this public repo. The workflow commits its
 JSON state after each run; do not add confidential project information to it.
 For private PostgreSQL memory, create a database and set the repository Actions
 secret `INVENTION_DATABASE_URL` to its connection string. The code then uses
-PostgreSQL, but existing Git JSON history needs an explicit migration before
-it can be called continuous memory. Never commit a database URL to the repo.
+PostgreSQL and imports existing Git JSON run history on its first empty database
+run. Past candidate-by-candidate records were never saved by the Git fallback;
+only past best designs and failure summaries exist. Never commit a database URL.
 
 ## Local test
 

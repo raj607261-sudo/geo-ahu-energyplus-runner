@@ -1,9 +1,9 @@
 # KissanShroom Invention Engine — V1 screening loop
 
-Render Cron starts this Python run every six hours (UTC). Each run generates 120
+GitHub Actions starts this Python run every six hours (UTC). Each run generates 120
 reproducible geometry candidates, calculates first-order airflow, fan input and
 sensible cooling for dry and humid test points, rejects failed constraints, and
-stores every candidate, reason and score in PostgreSQL. Later runs also generate
+stores a candidate summary and failure counts in public Git memory. Later runs also generate
 60 mutations of the previous best. It exits; the next run resumes with a new
 seed from the saved generation number. No ChatGPT Schedule is involved.
 
@@ -30,18 +30,21 @@ score includes a small core-area proxy penalty, not a real manufacturing BOM.
 
 ## Deployment
 
-Push these files to a GitHub/GitLab/Bitbucket repository with `render.yaml` at
-its root. In Render Dashboard create a Blueprint from that repository, review
-the paid Cron and PostgreSQL plans, then Apply. Cron runs every six hours and
-prints its candidate and verifier output to Render logs. Review costs before
-Apply; the Blueprint intentionally includes no API keys. Render cron and DB
-charges depend on current pricing. No phone or computer needs to stay on.
+The `.github/workflows/kissanshroom-rnd.yml` workflow runs on the default branch
+every six hours and can also be started with `workflow_dispatch`. Standard
+GitHub-hosted runners are free for this public repo. The workflow commits its
+JSON state after each run; do not add confidential project information to it.
+For private PostgreSQL memory, create a database and set the repository Actions
+secret `INVENTION_DATABASE_URL` to its connection string. The code then uses
+PostgreSQL, but existing Git JSON history needs an explicit migration before
+it can be called continuous memory. Never commit a database URL to the repo.
 
 ## Local test
 
 `python -m unittest discover -s tests -v` needs Python 3.10+ and no database.
-To run a generation locally, set `DATABASE_URL` to a PostgreSQL connection,
-install `requirements.txt`, and run `python -m engine.run`.
+To run a generation locally, install `requirements.txt`, set `STATE_PATH` to
+a disposable path, and run `python -m engine.run`. Set `DATABASE_URL` to use
+PostgreSQL instead.
 
 ## Next engineering gate
 

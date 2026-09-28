@@ -38,7 +38,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add state/memory.json
+          if test -f state/memory.json; then git add state/memory.json; fi
           if ! git diff --cached --quiet; then
             git commit -m "Record R&D screening generation"
             git push

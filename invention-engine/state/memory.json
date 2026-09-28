@@ -43,6 +43,124 @@
         "humid climate capacity <1.5 TR": 113
       },
       "note": "Unvalidated screening; physical measurements required."
+    },
+    {
+      "generation": 2,
+      "created_at": "2026-09-28T05:55:17.046692+00:00",
+      "best": {
+        "geometry": {
+          "gap_mm": 9.024239266403853,
+          "length_m": 0.4071442868871499,
+          "area_m2": 16.432482561925553,
+          "flow_m3s": 0.814541983886499,
+          "working_fraction": 0.34850433811197334,
+          "assumed_dp_effectiveness": 0.95
+        },
+        "velocity_mps": 2.24,
+        "core_dp_pa": 11.1,
+        "fan_w": 26,
+        "pump_w": 35.0,
+        "climates": {
+          "dry": {
+            "supply_c": 21.0,
+            "capacity_w": 11766,
+            "dew_point_c": 20.0,
+            "wet_bulb_c": 22.0
+          },
+          "humid": {
+            "supply_c": 26.45,
+            "capacity_w": 5295,
+            "dew_point_c": 26.0,
+            "wet_bulb_c": 28.0
+          }
+        },
+        "screening_pass": true,
+        "reasons": [],
+        "status": "UNVALIDATED ESTIMATE; geometry/effectiveness/wetting need prototype tests"
+      },
+      "candidate_count": 180,
+      "screening_pass": true,
+      "failure_summary": {
+        "dry climate capacity <1.5 TR": 18,
+        "estimated core pressure drop >100 Pa": 69,
+        "estimated electric input >450 W": 45,
+        "humid climate capacity <1.5 TR": 133
+      },
+      "note": "Unvalidated screening; physical measurements required.",
+      "next_problem": "humid climate capacity <1.5 TR"
     }
-  ]
+  ],
+  "research_leads": [
+    {
+      "doi": "10.1016/j.rser.2016.08.022",
+      "title": "Overview of the Maisotsenko cycle \u2013 A way towards dew point evaporative cooling",
+      "url": "https://doi.org/10.1016/j.rser.2016.08.022",
+      "query": "Maisotsenko cycle dew point evaporative cooling pressure drop",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    },
+    {
+      "doi": "10.1007/978-3-031-30758-4_6",
+      "title": "Advanced Dew-Point Evaporative Cooling Systems",
+      "url": "https://doi.org/10.1007/978-3-031-30758-4_6",
+      "query": "Maisotsenko cycle dew point evaporative cooling pressure drop",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    },
+    {
+      "doi": "10.1007/978-3-031-30758-4_4",
+      "title": "Modeling of Dew-Point Evaporative Coolers",
+      "url": "https://doi.org/10.1007/978-3-031-30758-4_4",
+      "query": "Maisotsenko cycle dew point evaporative cooling pressure drop",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    },
+    {
+      "doi": "10.1007/978-3-031-30758-4_3",
+      "title": "Engineering of Dew-Point Evaporative Coolers",
+      "url": "https://doi.org/10.1007/978-3-031-30758-4_3",
+      "query": "Maisotsenko cycle dew point evaporative cooling pressure drop",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    },
+    {
+      "doi": "10.1007/978-3-031-30758-4_5",
+      "title": "Fundamental Analysis of Dew-Point Evaporative Cooler",
+      "url": "https://doi.org/10.1007/978-3-031-30758-4_5",
+      "query": "Maisotsenko cycle dew point evaporative cooling pressure drop",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    },
+    {
+      "doi": "10.1016/j.egypro.2014.11.933",
+      "title": "Use of Indirect Evaporative Cooling as Pre-cooling Unit in Humid Tropical Climate: An Energy Saving Technique",
+      "url": "https://doi.org/10.1016/j.egypro.2014.11.933",
+      "query": "indirect evaporative cooling humid climate experiment",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    },
+    {
+      "doi": "10.1016/j.enbuild.2013.03.007",
+      "title": "Thermal comfort in naturally ventilated spaces and under indirect evaporative passive cooling conditions in hot\u2013humid climate",
+      "url": "https://doi.org/10.1016/j.enbuild.2013.03.007",
+      "query": "indirect evaporative cooling humid climate experiment",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    },
+    {
+      "doi": "10.1016/j.enconman.2015.02.025",
+      "title": "Performance evaluation of an indirect pre-cooling evaporative heat exchanger operating in hot and humid climate",
+      "url": "https://doi.org/10.1016/j.enconman.2015.02.025",
+      "query": "indirect evaporative cooling humid climate experiment",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    },
+    {
+      "doi": "10.1088/1742-6596/2042/1/012098",
+      "title": "Application of indirect evaporative cooling strategies for a warm-humid climate",
+      "url": "https://doi.org/10.1088/1742-6596/2042/1/012098",
+      "query": "indirect evaporative cooling humid climate experiment",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    },
+    {
+      "doi": "10.1016/j.applthermaleng.2024.122598",
+      "title": "A solar-assisted regenerative desiccant air conditioning with indirect evaporative cooling for humid climate region",
+      "url": "https://doi.org/10.1016/j.applthermaleng.2024.122598",
+      "query": "indirect evaporative cooling humid climate experiment",
+      "status": "METADATA LEAD ONLY; paper and conditions not reviewed"
+    }
+  ],
+  "research_error": null
 }

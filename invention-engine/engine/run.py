@@ -135,6 +135,16 @@ def run_file_memory():
                   "failure_summary": {reason: sum(reason in c["reasons"] for c in pool)
                                       for reason in sorted({r for c in pool for r in c["reasons"]})},
                   "note": "Unvalidated screening; physical measurements required."}
+    run_record["next_problem"] = max(run_record["failure_summary"],
+                                     key=run_record["failure_summary"].get,
+                                     default="measure real HMX effectiveness")
+    if not memory.get("research_leads") or generation % 28 == 0:
+        try:
+            from engine.research import scout
+            memory["research_leads"] = scout()
+            memory["research_error"] = None
+        except Exception as exc:
+            memory["research_error"] = type(exc).__name__
     memory["runs"].append(run_record)
     temp = path.with_suffix(".tmp")
     temp.write_text(json.dumps(memory, indent=2) + "\n")

@@ -102,6 +102,18 @@ def run():
             if not cur.fetchone()[0]:
                 print("Another run is active; exiting")
                 return
+            cur.execute("SELECT count(*) FROM runs")
+            if cur.fetchone()[0] == 0:
+                history_path = Path(os.environ.get("STATE_PATH", "state/memory.json"))
+                if history_path.exists():
+                    history = json.loads(history_path.read_text())
+                    for old in history.get("runs", []):
+                        cur.execute("""INSERT INTO runs(id, created_at, best, screening_pass, note)
+                                       VALUES (%s, %s, %s, %s, %s) ON CONFLICT (id) DO NOTHING""",
+                                    (old["generation"], old["created_at"], json.dumps(old["best"]),
+                                     old["screening_pass"], old.get("note", "Migrated Git history")))
+                    cur.execute("""SELECT setval(pg_get_serial_sequence('runs','id'),
+                                greatest(coalesce((SELECT max(id) FROM runs), 0), 1), true)""")
             cur.execute("SELECT coalesce(max(id), 0) FROM runs")
             generation = cur.fetchone()[0] + 1
             pool = list(candidates(generation))

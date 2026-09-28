@@ -24,6 +24,10 @@ jobs:
         working-directory: invention-engine
     steps:
       - uses: actions/checkout@v4
+      - name: Load latest persistent memory
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

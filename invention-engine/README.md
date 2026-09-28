@@ -23,6 +23,10 @@ effectiveness is an assumed input. The face-area/pressure-drop model is a
 surrogate; wet-channel losses, headers, actual blower curve, wettability,
 evaporation, water quality, leakage, room humidity, and fabrication cost are
 unmeasured. A screening pass is never a physical performance claim.
+The assumed dew-point effectiveness is fixed at 0.75 for every candidate until
+measured, so the search cannot improve its score by inventing effectiveness.
+The air-stream sensible reduction is **not** verified room cooling duty. The
+score includes a small core-area proxy penalty, not a real manufacturing BOM.
 
 ## Deployment
 

@@ -1,0 +1,45 @@
+name: KissanShroom R&D cycle
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'invention-engine/engine/**'
+      - 'invention-engine/tests/**'
+      - '.github/workflows/kissanshroom-rnd.yml'
+permissions:
+  contents: write
+concurrency:
+  group: kissanshroom-rnd-cycle
+  cancel-in-progress: false
+jobs:
+  cycle:
+    if: github.repository == 'raj607261-sudo/geo-ahu-energyplus-runner'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: invention-engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - name: Run R&D generation
+        env:
+          DATABASE_URL: ${{ secrets.INVENTION_DATABASE_URL }}
+          STATE_PATH: state/memory.json
+        run: python -m engine.run
+      - name: Persist public screening history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if test -f state/memory.json; then git add state/memory.json; fi
+          if ! git diff --cached --quiet; then
+            git commit -m "Record R&D screening generation"
+            git push
+          fi

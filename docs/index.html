@@ -69,6 +69,9 @@ nav.links a:hover{color:var(--fg)}
 .btn small{display:block;font:500 11px/1.3 var(--f-body);opacity:.75;margin-top:2px}
 .arr{font-family:var(--f-mono)}
 @media (max-width:860px){nav.links{display:none}.bar .btn{padding:10px 14px;font-size:14px}}
+.mnav{display:none}
+@media (max-width:860px){.mnav{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}.mnav::-webkit-scrollbar{display:none}.mnav a{flex:none;font:600 13px var(--f-display);color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px}}
+@media (max-width:560px){.brand small{display:none}.long{display:none}.hero{padding-block:36px 28px}section.band{padding-block:52px}}
 
 /* hero */
 .hero{padding-block:64px 40px;display:grid;gap:22px}
@@ -136,8 +139,8 @@ section.alt{background:var(--bg-2);border-block:1px solid var(--line)}
 .ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font:700 14px var(--f-mono)}
 .bad .ico{background:#f4dccb;color:#a2481a}
 .good .ico{background:#d9efc3;color:#2f6b10}
-.swap{width:120px;height:120px;border-radius:50%;background:var(--paper-ink);display:grid;place-items:center;color:var(--lime);font:700 13px/1.3 var(--f-mono);text-align:center;letter-spacing:.08em}
-@media (max-width:820px){.paper{grid-template-columns:1fr}.swap{width:64px;height:64px;justify-self:center;transform:rotate(90deg);font-size:22px}}
+.swap{width:120px;height:120px;border-radius:50%;background:var(--paper-ink);display:grid;place-items:center;color:var(--lime);font:700 40px/1 var(--f-mono);text-align:center}
+@media (max-width:820px){.paper{grid-template-columns:1fr}.swap{width:64px;height:64px;justify-self:center;transform:rotate(90deg);font-size:28px}}
 
 /* proof */
 .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
@@ -170,17 +173,27 @@ section.alt{background:var(--bg-2);border-block:1px solid var(--line)}
 @media (max-width:440px){.steps{grid-template-columns:1fr}}
 
 /* research */
-.papers{display:grid;gap:16px}
-.paper-card{display:grid;grid-template-columns:200px 1fr;gap:28px;padding:26px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
-.paper-card .big{font:700 clamp(34px,4vw,46px)/1 var(--f-display);color:var(--lime);font-variant-numeric:tabular-nums}
-.paper-card .what{font-size:12.5px;color:var(--muted);margin-top:6px}
-.paper-card .src{font:700 10px var(--f-mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
-.paper-card h3{font-size:19px;line-height:1.25}
-.paper-card .by{font-size:13px;color:var(--muted);margin:4px 0 10px}
-.paper-card p.body{font-size:14.5px;max-width:70ch}
-.rel{margin-top:14px;padding:12px 14px;border-left:3px solid var(--lime);background:color-mix(in srgb,var(--lime) 7%,transparent);font-size:13.5px}
-.rel b{font:700 10px var(--f-mono);letter-spacing:.12em;color:var(--lime);display:block;margin-bottom:3px}
-@media (max-width:720px){.paper-card{grid-template-columns:1fr;gap:12px}}
+.rfilter{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:20px;scrollbar-width:none}
+.rfilter::-webkit-scrollbar{display:none}
+.chip{flex:none;font:600 13px var(--f-display);color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}
+.chip:hover{color:var(--fg)}
+.chip.on{background:var(--lime);border-color:var(--lime);color:var(--lime-ink)}
+.papers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.pc{display:flex;flex-direction:column;gap:6px;padding:24px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);min-width:0}
+.pc-tag{font:700 10px/1.5 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.t-need{color:var(--warn)}.t-ground{color:var(--earth)}.t-cond{color:var(--hot)}.t-earth{color:var(--chill)}
+.pc-big{font:700 clamp(34px,4vw,44px)/1 var(--f-display);color:var(--lime);font-variant-numeric:tabular-nums}
+.pc-what{font-size:13px;color:var(--muted);margin-bottom:8px}
+.pc h3{font-size:18px;line-height:1.3}
+.pc-by{font-size:13px;color:var(--muted)}
+.pc-body{font-size:14.5px;margin-top:6px}
+.pc .rel{margin-top:10px}
+.pc-link{margin-top:auto;padding-top:14px;font:600 14px var(--f-display);color:var(--lime);text-decoration:none;word-break:break-word}
+.pc-link:hover{text-decoration:underline}
+.rel{padding:12px 14px;border-left:3px solid var(--lime);background:color-mix(in srgb,var(--lime) 7%,transparent);font-size:13.5px}
+.rel b{font:700 10px var(--f-mono);letter-spacing:.12em;color:var(--lime);display:block;margin-bottom:3px;text-transform:uppercase}
+.pc[data-t="need"]{grid-column:1/-1}
+@media (max-width:760px){.papers{grid-template-columns:minmax(0,1fr)}}
 .caveat{margin-top:20px;padding:14px 18px;border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);border-radius:12px;font-size:13.5px;color:var(--fg)}
 .caveat b{color:var(--warn)}
 
@@ -226,8 +239,11 @@ footer b{font:700 11px var(--f-mono);letter-spacing:.1em;color:var(--lime)}
       <a href="#research">Research</a>
       <a href="#example">Cost</a>
     </nav>
-    <a class="btn btn-lime" href="./simulation/">Open room planner <span class="arr">↗</span></a>
+    <a class="btn btn-lime" href="./simulation/"><span>Open <span class="long">room </span>planner</span> <span class="arr">↗</span></a>
   </div>
+  <nav class="wrap mnav" aria-label="Sections (mobile)">
+    <a href="#system">System</a><a href="#modes">Planner</a><a href="#proof">Energy run</a><a href="#research">Research</a><a href="#example">Cost</a>
+  </nav>
 </header>
 
 <main id="top">
@@ -293,15 +309,15 @@ footer b{font:700 11px var(--f-mono);letter-spacing:.1em;color:var(--lime)}
             <path class="flow" d="M560 160 C585 155 600 180 625 170" fill="none" stroke="#9fd6ff" stroke-width="2"/>
             <path class="flow" d="M560 190 C585 185 600 205 625 198" fill="none" stroke="#9fd6ff" stroke-width="2"/>
             <!-- number badges -->
-            <g font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" text-anchor="middle">
-              <g><circle cx="300" cy="352" r="11" fill="#0a1f16" stroke="#6fd36b" stroke-width="1.5"/><text x="300" y="356" fill="#6fd36b">1</text></g>
-              <g><circle cx="130" cy="218" r="11" fill="#0a1f16" stroke="#6fd36b" stroke-width="1.5"/><text x="130" y="222" fill="#6fd36b">2</text></g>
-              <g><circle cx="172" cy="142" r="11" fill="#0a1f16" stroke="#ff8a3d" stroke-width="1.5"/><text x="172" y="146" fill="#ff8a3d">3</text></g>
-              <g><circle cx="326" cy="70" r="11" fill="#0a1f16" stroke="#ff8a3d" stroke-width="1.5"/><text x="326" y="74" fill="#ff8a3d">4</text></g>
-              <g><circle cx="422" cy="150" r="11" fill="#0a1f16" stroke="#4aa8ff" stroke-width="1.5"/><text x="422" y="154" fill="#4aa8ff">5</text></g>
-              <g><circle cx="502" cy="284" r="11" fill="#0a1f16" stroke="#4aa8ff" stroke-width="1.5"/><text x="502" y="288" fill="#4aa8ff">6</text></g>
-              <g><circle cx="528" cy="140" r="11" fill="#0a1f16" stroke="#4aa8ff" stroke-width="1.5"/><text x="528" y="144" fill="#4aa8ff">7</text></g>
-              <g><circle cx="595" cy="78" r="11" fill="#0a1f16" stroke="#eef5ee" stroke-width="1.5"/><text x="595" y="82" fill="#eef5ee">8</text></g>
+            <g font-family="JetBrains Mono,monospace" font-size="14" font-weight="700" text-anchor="middle">
+              <g><circle cx="300" cy="352" r="14" fill="#0a1f16" stroke="#6fd36b" stroke-width="1.5"/><text x="300" y="357" fill="#6fd36b">1</text></g>
+              <g><circle cx="130" cy="218" r="14" fill="#0a1f16" stroke="#6fd36b" stroke-width="1.5"/><text x="130" y="223" fill="#6fd36b">2</text></g>
+              <g><circle cx="172" cy="142" r="14" fill="#0a1f16" stroke="#ff8a3d" stroke-width="1.5"/><text x="172" y="147" fill="#ff8a3d">3</text></g>
+              <g><circle cx="326" cy="70" r="14" fill="#0a1f16" stroke="#ff8a3d" stroke-width="1.5"/><text x="326" y="75" fill="#ff8a3d">4</text></g>
+              <g><circle cx="422" cy="150" r="14" fill="#0a1f16" stroke="#4aa8ff" stroke-width="1.5"/><text x="422" y="155" fill="#4aa8ff">5</text></g>
+              <g><circle cx="502" cy="284" r="14" fill="#0a1f16" stroke="#4aa8ff" stroke-width="1.5"/><text x="502" y="289" fill="#4aa8ff">6</text></g>
+              <g><circle cx="528" cy="140" r="14" fill="#0a1f16" stroke="#4aa8ff" stroke-width="1.5"/><text x="528" y="145" fill="#4aa8ff">7</text></g>
+              <g><circle cx="595" cy="78" r="14" fill="#0a1f16" stroke="#eef5ee" stroke-width="1.5"/><text x="595" y="83" fill="#eef5ee">8</text></g>
             </g>
           </svg>
         </div>
@@ -424,40 +440,87 @@ footer b{font:700 11px var(--f-mono);letter-spacing:.1em;color:var(--lime)}
   <section class="band alt" id="research">
     <div class="wrap">
       <div class="sec-head">
-        <p class="eyebrow">Independent research · original papers</p>
-        <h2>Three studies that support the Geo-AHU mechanism</h2>
-        <p class="lede">Ground-source savings in Indian peak weather, water-cooled condenser savings, and a hybrid earth-and-water cooling architecture.</p>
+        <p class="eyebrow">Research library · 7 sources</p>
+        <h2>The science behind every part of Geo-AHU</h2>
+        <p class="lede">Each source supports one link in the chain: why storage matters, why the ground is a better heat sink, why a water-cooled condenser saves power, and why earth pre-cooling works in Indian weather.</p>
+      </div>
+      <div class="rfilter" role="tablist" aria-label="Filter research by topic">
+        <button type="button" class="chip on" data-f="all" id="rf-all">All</button>
+        <button type="button" class="chip" data-f="need" id="rf-need">The problem</button>
+        <button type="button" class="chip" data-f="ground" id="rf-ground">Ground heat sink</button>
+        <button type="button" class="chip" data-f="cond" id="rf-cond">Water-cooled condenser</button>
+        <button type="button" class="chip" data-f="earth" id="rf-earth">Earth pre-cooling</button>
       </div>
       <div class="papers">
-        <article class="paper-card">
-          <div><div class="big">36.85%</div><p class="what">electrical energy saved in peak cooling</p></div>
-          <div>
-            <p class="src">IIT Roorkee · Experimental · 2024</p>
-            <h3>Experimental Investigation of Energy-Saving Potential of Ground Source Heat Pump During Peak Hour Operations</h3>
-            <p class="by">Sah, Murugesan &amp; Rajasekar · ASME Journal of Thermal Science and Engineering Applications</p>
-            <p class="body">A 17.58 kW GSHP was tested against a 17.57 kW air-source system in Roorkee: 36.85% cooling-mode and 38.65% heating-mode electrical savings.</p>
-            <p class="rel"><b>GEO-AHU RELEVANCE</b>Strong Indian-climate evidence for the ground-source principle. It is a space-conditioning test, not a cold-storage certification.</p>
-          </div>
+        <article class="pc" data-t="need">
+          <p class="pc-tag t-need">The problem · Govt. of India · 2022</p>
+          <div class="pc-big">6–15%</div>
+          <p class="pc-what">of fruits lost after harvest; vegetables 4.9–11.6%</p>
+          <h3>Study to Determine Post-Harvest Losses of Agri Produce in India</h3>
+          <p class="pc-by">NABCONS for the Ministry of Food Processing Industries · 54 commodities, 2020–22</p>
+          <p class="pc-body">Fruit losses are about 7.36 million tonnes a year, worth roughly ₹29,545 crore. Guava (15.05%) and tomato (11.6%) are among the worst hit.</p>
+          <p class="rel"><b>Why it matters for Geo-AHU</b>This is the loss a farmer-level cold room is meant to cut. It sets the size of the opportunity.</p>
+          <a class="pc-link" href="https://eparlib.sansad.in/bitstream/123456789/3017416/1/AU1976_37fxUw.pdf" target="_blank" rel="noopener">Lok Sabha answer citing the study ↗</a>
         </article>
-        <article class="paper-card">
-          <div><div class="big">21–27%</div><p class="what">energy saving reported</p></div>
-          <div>
-            <p class="src">Water-cooled condenser · 2017</p>
-            <h3>Performance studies on domestic refrigerators retrofitted with building-integrated water-cooled condenser</h3>
-            <p class="by">P. Saji Raveendran &amp; S. Joseph Sekhar · Energy and Buildings 134</p>
-            <p class="body">Replacing an air-cooled condenser with a water-cooled one gave 21–27% energy savings; the brazed-plate option also reduced TEWI.</p>
-            <p class="rel"><b>GEO-AHU RELEVANCE</b>Direct evidence for the cooler-water condenser and BPHE principle. Domestic-refrigerator scale cannot be copied as a 10 MT guarantee.</p>
-          </div>
+        <article class="pc" data-t="ground">
+          <p class="pc-tag t-ground">Ground heat sink · IIT Roorkee · Experimental</p>
+          <div class="pc-big">36.85%</div>
+          <p class="pc-what">less electricity in peak-hour cooling</p>
+          <h3>Ground source heat pump vs air-source system in Roorkee peak weather</h3>
+          <p class="pc-by">S. K. Sah, K. Murugesan &amp; E. Rajasekar · IIT Roorkee</p>
+          <p class="pc-body">A 17.58 kW ground-source unit was tested side by side with a 17.57 kW air-source unit. The ground-coupled system used 36.85% less power in cooling mode and 38.65% less in heating mode.</p>
+          <p class="rel"><b>Why it matters for Geo-AHU</b>Indian-climate proof that rejecting heat into the ground beats rejecting it into hot air. It is a space-cooling test, not a cold-store test.</p>
+          <a class="pc-link" href="https://scholar.google.com/scholar?q=Sah+Murugesan+Rajasekar+ground+source+heat+pump+energy+saving+cooling" target="_blank" rel="noopener">Find the IIT Roorkee papers ↗</a>
         </article>
-        <article class="paper-card">
-          <div><div class="big">14.0 °C</div><p class="what">lowest optimised outlet-air temperature</p></div>
-          <div>
-            <p class="src">Scientific Reports · Vol. 16 · 2026</p>
-            <h3>Synergizing building-integrated photovoltaic with ground-air and water-air heat exchangers for solar-powered gym cooling</h3>
-            <p class="by">Ben Ali et al. · Scientific Reports 16, Article 2041</p>
-            <p class="body">The optimised hybrid EAHE–WAHE series layout reached 14.0 °C outlet air; the parallel layout produced 41 kWh in August, 64% above the series configuration.</p>
-            <p class="rel"><b>GEO-AHU RELEVANCE</b>Supports a hybrid earth-and-water pre-cooling architecture. It is a building-cooling study, not a refrigeration field trial.</p>
-          </div>
+        <article class="pc" data-t="ground">
+          <p class="pc-tag t-ground">Ground heat sink · Int. J. Refrigeration · 2019</p>
+          <div class="pc-big">20–30%</div>
+          <p class="pc-what">lower combined running cost in the best case</p>
+          <h3>Geothermal storage integration into a supermarket's CO₂ refrigeration system</h3>
+          <p class="pc-by">Karampour, Mateu-Royo, Rogstam &amp; Sawalha · Vol. 106</p>
+          <p class="pc-body">Field data from Swedish supermarkets were used to couple commercial refrigeration with borehole storage. When the refrigeration plant also supplied heat to a neighbouring building, combined annual running cost fell by about 20–30%.</p>
+          <p class="rel"><b>Why it matters for Geo-AHU</b>Shows a real refrigeration plant, not just air-conditioning, working with a ground borefield.</p>
+          <a class="pc-link" href="https://doi.org/10.1016/j.ijrefrig.2019.05.026" target="_blank" rel="noopener">DOI 10.1016/j.ijrefrig.2019.05.026 ↗</a>
+        </article>
+        <article class="pc" data-t="cond">
+          <p class="pc-tag t-cond">Water-cooled condenser · Energy and Buildings · 2017</p>
+          <div class="pc-big">21–27%</div>
+          <p class="pc-what">lower daily energy than an air-cooled condenser</p>
+          <h3>Performance studies on domestic refrigerators retrofitted with building-integrated water-cooled condenser</h3>
+          <p class="pc-by">P. Saji Raveendran &amp; S. Joseph Sekhar · Vol. 134, pp. 1–10</p>
+          <p class="pc-body">The air-cooled condenser was replaced by a water-cooled brazed-plate condenser. Daily energy use fell 21–27% and COP rose 52–68%.</p>
+          <p class="rel"><b>Why it matters for Geo-AHU</b>The same principle as Geo-AHU's water-cooled condenser fed by ground-loop water. Domestic-fridge scale is not a 10 MT guarantee.</p>
+          <a class="pc-link" href="https://scholar.google.com/scholar?q=%22Performance+studies+on+domestic+refrigerators+retrofitted+with+building-integrated+water-cooled+condenser%22" target="_blank" rel="noopener">Find the paper ↗</a>
+        </article>
+        <article class="pc" data-t="cond">
+          <p class="pc-tag t-cond">Water-cooled condenser · J. Thermal Analysis &amp; Calorimetry · 2017</p>
+          <div class="pc-big">BPHE</div>
+          <p class="pc-what">brazed-plate condenser, exergy analysis</p>
+          <h3>Exergy analysis of a domestic refrigerator with brazed plate heat exchanger as condenser</h3>
+          <p class="pc-by">P. Saji Raveendran &amp; S. Joseph Sekhar · Vol. 127, pp. 2439–2446</p>
+          <p class="pc-body">Looks at where energy is lost in each component when the condenser is a compact water-cooled plate heat exchanger instead of an air coil.</p>
+          <p class="rel"><b>Why it matters for Geo-AHU</b>Supports choosing a brazed-plate condenser between the refrigerant circuit and the ground loop.</p>
+          <a class="pc-link" href="https://doi.org/10.1007/s10973-016-5847-2" target="_blank" rel="noopener">DOI 10.1007/s10973-016-5847-2 ↗</a>
+        </article>
+        <article class="pc" data-t="earth">
+          <p class="pc-tag t-earth">Earth pre-cooling · Renewable &amp; Sustainable Energy Reviews · 2013</p>
+          <div class="pc-big">India</div>
+          <p class="pc-what">review of earth-air heat exchanger studies</p>
+          <h3>Experimental and analytical studies of earth–air heat exchanger (EAHE) systems in India: A review</h3>
+          <p class="pc-by">T. S. Bisoniya, A. Kumar &amp; P. Baredar · Vol. 19, pp. 238–246</p>
+          <p class="pc-body">Collects Indian field and model studies on using stable soil temperature to cool air in summer and warm it in winter.</p>
+          <p class="rel"><b>Why it matters for Geo-AHU</b>Background for the ground loop sizing and soil temperature assumptions in Indian conditions.</p>
+          <a class="pc-link" href="https://econpapers.repec.org/RePEc:eee:rensus:v:19:y:2013:i:c:p:238-246" target="_blank" rel="noopener">View record ↗</a>
+        </article>
+        <article class="pc" data-t="earth">
+          <p class="pc-tag t-earth">Earth pre-cooling · Scientific Reports · 2026</p>
+          <div class="pc-big">14.0 °C</div>
+          <p class="pc-what">lowest optimised outlet-air temperature</p>
+          <h3>Synergizing building-integrated photovoltaic with ground-air and water-air heat exchangers for solar-powered gym cooling</h3>
+          <p class="pc-by">Ben Ali et al. · Vol. 16, Article 2041</p>
+          <p class="pc-body">A hybrid earth-air and water-air heat exchanger layout reached 14.0 °C outlet air. The parallel layout produced 41 kWh in August, 64% above the series layout.</p>
+          <p class="rel"><b>Why it matters for Geo-AHU</b>Supports a hybrid earth-and-water pre-cooling stage. It is a building study, not a refrigeration field trial.</p>
+          <a class="pc-link" href="https://scholar.google.com/scholar?q=%22Synergizing+building-integrated+photovoltaic+with+ground-air+and+water-air+heat+exchangers%22" target="_blank" rel="noopener">Find the paper ↗</a>
         </article>
       </div>
       <p class="caveat"><b>Important:</b> research-paper percentages belong to their own experimental systems. Geo-AHU's commercial saving will be claimed only after an instrumented side-by-side pilot in Bihar.</p>
@@ -519,5 +582,11 @@ footer b{font:700 11px var(--f-mono);letter-spacing:.1em;color:var(--lime)}
     <span>Pre-design simulation, not equipment certification. Manufacturer curves and measured soil tests remain required before guaranteed performance or procurement.</span>
   </div>
 </footer>
+<script>
+(function(){var chips=document.querySelectorAll('.chip'),cards=document.querySelectorAll('.pc');
+chips.forEach(function(c){c.addEventListener('click',function(){var f=c.dataset.f;
+chips.forEach(function(x){x.classList.toggle('on',x===c);x.setAttribute('aria-selected',x===c)});
+cards.forEach(function(k){k.hidden=!(f==='all'||k.dataset.t===f)});});});})();
+</script>
 </body>
 </html>

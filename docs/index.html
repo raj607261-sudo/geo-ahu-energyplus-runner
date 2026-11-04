@@ -1,1 +1,523 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta http-equiv="refresh" content="0; url=./simulation/"><title>Geo-AHU</title></head><body><p><a href="./simulation/">Open Geo-AHU Simulation</a></p></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Geo-AHU Cold Storage</title>
+<meta name="description" content="Geo-AHU: ground-assisted cold storage for Indian farmers. Plan 1–5 cold rooms, size one central plant and inspect a verified EnergyPlus reference run.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:title" content="Geo-AHU Cold Storage">
+<meta property="og:description" content="Cold storage that works with the earth, not against it. 31.2% lower annual electricity in a verified EnergyPlus reference run.">
+<meta name="theme-color" content="#0a1f16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: dark field-green bands, one lime accent; hero thesis → system schematic → proof → research → planner CTA */
+:root{
+  --bg:#0a1f16;          /* deep field green */
+  --bg-2:#0f2a1e;        /* raised band */
+  --panel:#123324;       /* cards */
+  --line:#24513b;        /* hairlines */
+  --fg:#eef5ee;          /* text */
+  --muted:#9fbcab;       /* secondary text */
+  --lime:#b8f03a;        /* accent */
+  --lime-ink:#10260a;    /* text on lime */
+  --paper:#f1f0e4;       /* farmer band */
+  --paper-ink:#173323;
+  --paper-muted:#5d6f61;
+  --earth:#6fd36b;       /* ground loop */
+  --chill:#4aa8ff;       /* chilled water */
+  --hot:#ff8a3d;         /* refrigerant */
+  --warn:#f2b441;
+  --f-display:"Familjen Grotesk","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  --r:14px;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+img,svg{max-width:100%}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:6px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;line-height:1.08;margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font:700 11px/1.3 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--lime)}
+.lede{color:var(--muted);max-width:62ch}
+.num{font-variant-numeric:tabular-nums}
+
+/* header */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:20px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto}
+.logo{width:38px;height:38px;border:2px solid var(--lime);border-radius:10px;display:grid;place-items:center;font:700 17px var(--f-display);color:var(--lime)}
+.brand b{display:block;font:700 16px/1 var(--f-display);letter-spacing:.04em}
+.brand small{display:block;font:500 9px/1.4 var(--f-mono);letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-top:3px}
+nav.links{display:flex;gap:22px}
+nav.links a{font-size:14px;font-weight:500;color:var(--muted);text-decoration:none}
+nav.links a:hover{color:var(--fg)}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;font:600 15px/1.2 var(--f-display);text-decoration:none;border:1px solid transparent;transition:transform .15s ease,background .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-lime{background:var(--lime);color:var(--lime-ink)}
+.btn-ghost{border-color:var(--line);color:var(--fg);background:var(--panel)}
+.btn-ghost:hover{border-color:var(--lime)}
+.btn small{display:block;font:500 11px/1.3 var(--f-body);opacity:.75;margin-top:2px}
+.arr{font-family:var(--f-mono)}
+@media (max-width:860px){nav.links{display:none}.bar .btn{padding:10px 14px;font-size:14px}}
+
+/* hero */
+.hero{padding-block:64px 40px;display:grid;gap:22px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--lime);margin-right:8px;vertical-align:1px;box-shadow:0 0 0 4px color-mix(in srgb,var(--lime) 25%,transparent)}
+.hero h1{font-size:clamp(40px,7.4vw,84px);font-weight:700;max-width:15ch;letter-spacing:-.025em}
+.hero h1 em{font-style:normal;color:var(--lime)}
+.hero .lede{font-size:clamp(16px,1.6vw,19px);color:var(--fg);opacity:.85}
+.hero .lede strong{color:var(--lime);font-weight:600}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.note{font-size:12.5px;color:var(--muted)}
+
+/* schematic */
+.schematic{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,#0d281c,#081812);overflow:hidden}
+.sch-head{display:flex;justify-content:space-between;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);font:600 13px var(--f-display)}
+.sch-head span:last-child{font:700 10px var(--f-mono);letter-spacing:.12em;color:var(--lime)}
+.sch-body{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:0}
+.sch-svg{padding:18px;overflow-x:auto;min-width:0}
+.sch-svg svg{display:block;width:100%;height:auto}
+.parts{list-style:none;margin:0;padding:18px 20px;border-left:1px solid var(--line);display:grid;gap:12px;align-content:start;min-width:0}
+.parts li{display:grid;grid-template-columns:26px 1fr;gap:10px;font-size:13.5px;line-height:1.45}
+.parts li b{display:block;font-family:var(--f-display);font-weight:600;font-size:14.5px}
+.parts li span{color:var(--muted)}
+.pn{width:24px;height:24px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font:700 11px var(--f-mono)}
+.c-earth{color:var(--earth)}.c-hot{color:var(--hot)}.c-chill{color:var(--chill)}.c-room{color:var(--fg)}
+.legend{display:flex;flex-wrap:wrap;gap:18px;padding:12px 20px;border-top:1px solid var(--line);font:500 11px var(--f-mono);color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:7px}
+@media (max-width:900px){.sch-body{grid-template-columns:minmax(0,1fr)}.parts{border-left:0;border-top:1px solid var(--line);grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.parts{grid-template-columns:1fr}}
+.flow{stroke-dasharray:8 10;animation:flow 1.6s linear infinite}
+.flow.rev{animation-direction:reverse}
+@keyframes flow{to{stroke-dashoffset:-36}}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}.btn{transition:none}html{scroll-behavior:auto}}
+
+/* sections */
+section.band{padding-block:72px}
+section.alt{background:var(--bg-2);border-block:1px solid var(--line)}
+.sec-head{display:grid;gap:12px;margin-bottom:32px}
+.sec-head h2{font-size:clamp(28px,4vw,44px)}
+
+.chain{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
+.chain div{padding:22px;border-left:1px solid var(--line);display:grid;gap:6px;min-width:0}
+.chain div:first-child{border-left:0}
+.chain .k{font:700 11px var(--f-mono);color:var(--lime);letter-spacing:.1em}
+.chain h3{font-size:20px}
+.chain p{font-size:14px;color:var(--muted)}
+@media (max-width:760px){.chain{grid-template-columns:1fr 1fr}.chain div:nth-child(3){border-left:0}.chain div:nth-child(n+3){border-top:1px solid var(--line)}}
+@media (max-width:440px){.chain{grid-template-columns:1fr}.chain div{border-left:0}.chain div+div{border-top:1px solid var(--line)}}
+
+.modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.mode{display:grid;gap:10px;align-content:start;padding:24px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);text-decoration:none;transition:border-color .15s}
+.mode:hover{border-color:var(--lime)}
+.mode .tag{font:700 10px var(--f-mono);letter-spacing:.14em;color:var(--muted)}
+.mode h3{font-size:22px}
+.mode p{font-size:14.5px;color:var(--muted)}
+.mode .go{font:600 13px var(--f-display);color:var(--lime);margin-top:6px}
+@media (max-width:820px){.modes{grid-template-columns:1fr}}
+
+/* farmer band */
+.paper{background:var(--paper);color:var(--paper-ink);border-radius:22px;padding:40px clamp(20px,4vw,48px);display:grid;grid-template-columns:1fr auto 1fr;gap:36px;align-items:center}
+.paper h3{font-size:26px;margin-bottom:4px}
+.paper .sub{font-size:13px;color:var(--paper-muted);margin-bottom:18px}
+.paper ul{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.paper li{display:grid;grid-template-columns:28px 1fr;gap:12px;font-size:14px;color:var(--paper-muted)}
+.paper li b{display:block;color:var(--paper-ink);font-weight:600;font-size:15px}
+.ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font:700 14px var(--f-mono)}
+.bad .ico{background:#f4dccb;color:#a2481a}
+.good .ico{background:#d9efc3;color:#2f6b10}
+.swap{width:120px;height:120px;border-radius:50%;background:var(--paper-ink);display:grid;place-items:center;color:var(--lime);font:700 13px/1.3 var(--f-mono);text-align:center;letter-spacing:.08em}
+@media (max-width:820px){.paper{grid-template-columns:1fr}.swap{width:64px;height:64px;justify-self:center;transform:rotate(90deg);font-size:22px}}
+
+/* proof */
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.stat{background:var(--panel);padding:22px;display:grid;gap:4px;min-width:0}
+.stat b{font:700 clamp(26px,3vw,36px)/1 var(--f-display);font-variant-numeric:tabular-nums}
+.stat b.hi{color:var(--lime)}
+.stat span{font-size:13px;font-weight:600}
+.stat small{font-size:12px;color:var(--muted)}
+@media (max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat:last-child{grid-column:1/-1}}
+
+.run{margin-top:22px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.run-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:16px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+.run-head h3{font-size:19px}
+.runid{font:700 12px var(--f-mono);color:var(--lime);border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+.run-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.run-grid div{padding:16px 20px;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.run-grid div:nth-child(-n+3){border-top:0}
+.run-grid div:nth-child(3n+1){border-left:0}
+.run-grid small{display:block;font-size:12px;color:var(--muted)}
+.run-grid code{font:700 15px var(--f-mono);font-variant-numeric:tabular-nums}
+@media (max-width:640px){.run-grid{grid-template-columns:1fr 1fr}.run-grid div{border-left:1px solid var(--line)!important;border-top:1px solid var(--line)!important}.run-grid div:nth-child(odd){border-left:0!important}.run-grid div:nth-child(-n+2){border-top:0!important}}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;counter-reset:s}
+.step{display:grid;gap:8px;align-content:start;padding-top:18px;border-top:2px solid var(--line);position:relative}
+.step::before{counter-increment:s;content:counter(s);position:absolute;top:-14px;left:0;width:26px;height:26px;border-radius:50%;background:var(--lime);color:var(--lime-ink);display:grid;place-items:center;font:700 12px var(--f-mono)}
+.step h3{font-size:19px;margin-top:6px}
+.step p{font-size:14px;color:var(--muted)}
+@media (max-width:820px){.steps{grid-template-columns:1fr 1fr;row-gap:36px}}
+@media (max-width:440px){.steps{grid-template-columns:1fr}}
+
+/* research */
+.papers{display:grid;gap:16px}
+.paper-card{display:grid;grid-template-columns:200px 1fr;gap:28px;padding:26px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
+.paper-card .big{font:700 clamp(34px,4vw,46px)/1 var(--f-display);color:var(--lime);font-variant-numeric:tabular-nums}
+.paper-card .what{font-size:12.5px;color:var(--muted);margin-top:6px}
+.paper-card .src{font:700 10px var(--f-mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.paper-card h3{font-size:19px;line-height:1.25}
+.paper-card .by{font-size:13px;color:var(--muted);margin:4px 0 10px}
+.paper-card p.body{font-size:14.5px;max-width:70ch}
+.rel{margin-top:14px;padding:12px 14px;border-left:3px solid var(--lime);background:color-mix(in srgb,var(--lime) 7%,transparent);font-size:13.5px}
+.rel b{font:700 10px var(--f-mono);letter-spacing:.12em;color:var(--lime);display:block;margin-bottom:3px}
+@media (max-width:720px){.paper-card{grid-template-columns:1fr;gap:12px}}
+.caveat{margin-top:20px;padding:14px 18px;border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);border-radius:12px;font-size:13.5px;color:var(--fg)}
+.caveat b{color:var(--warn)}
+
+/* example result */
+.example{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px}
+.ex-hero{padding:28px;border-radius:var(--r);background:var(--lime);color:var(--lime-ink);display:grid;gap:14px;align-content:start}
+.ex-hero .eyebrow{color:var(--lime-ink);opacity:.7}
+.ex-hero .big{font:700 clamp(54px,7vw,80px)/.9 var(--f-display);font-variant-numeric:tabular-nums}
+.ex-hero .big small{font-size:20px;margin-left:6px}
+.ex-hero dl{display:grid;grid-template-columns:1fr auto;gap:8px 16px;margin:6px 0 0;font-size:14.5px}
+.ex-hero dd{margin:0;font-weight:700;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.tbl{border:1px solid var(--line);border-radius:var(--r);overflow-x:auto;background:var(--panel)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:700 10.5px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td:not(:first-child),th:not(:first-child){text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0;font-weight:700}
+td.geo{color:var(--lime)}
+.ex-note{font-size:12.5px;color:var(--muted);margin-top:12px}
+@media (max-width:820px){.example{grid-template-columns:minmax(0,1fr)}}
+
+/* final cta */
+.final{border:1px solid var(--line);border-radius:22px;padding:clamp(28px,5vw,56px);background:radial-gradient(120% 140% at 100% 0%,color-mix(in srgb,var(--lime) 16%,transparent),transparent 55%),var(--panel);display:grid;gap:18px}
+.final h2{font-size:clamp(30px,4.6vw,52px);max-width:18ch}
+
+footer{border-top:1px solid var(--line);padding-block:28px;font-size:12.5px;color:var(--muted)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer b{font:700 11px var(--f-mono);letter-spacing:.1em;color:var(--lime)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#top" aria-label="Geo-AHU home">
+      <span class="logo">G</span>
+      <span><b>GEO-AHU</b><small>Cold storage design lab</small></span>
+    </a>
+    <nav class="links" aria-label="Sections">
+      <a href="#system">System</a>
+      <a href="#modes">Planner</a>
+      <a href="#proof">Energy run</a>
+      <a href="#research">Research</a>
+      <a href="#example">Cost</a>
+    </nav>
+    <a class="btn btn-lime" href="./simulation/">Open room planner <span class="arr">↗</span></a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <p class="eyebrow"><span class="dot"></span>Evidence-first project proposal · 19 August 2026</p>
+    <h1>Cold storage that works with the earth, <em>not against it.</em></h1>
+    <p class="lede">From a 10 MT pilot to a five-room hybrid cold store and a multi-chamber mushroom farm: choose the architecture and size the central plant with <strong>clear operating rules.</strong></p>
+    <div class="ctas">
+      <a class="btn btn-lime" href="./simulation/"><span class="arr">↗</span><span>Plan 1–5 cold rooms<small>Simple shared-plant sizing</small></span></a>
+      <a class="btn btn-ghost" href="#proof"><span class="arr">✓</span><span>View proof &amp; evidence<small>Native annual EnergyPlus run</small></span></a>
+    </div>
+    <p class="note">Design estimates require field validation. Final quotations and vendor scope must be confirmed.</p>
+  </div>
+
+  <div class="wrap" id="system">
+    <figure class="schematic" style="margin:0">
+      <figcaption class="sch-head"><span>Geo-AHU system · earth-to-cold-room flow</span><span>● Live schematic</span></figcaption>
+      <div class="sch-body">
+        <div class="sch-svg">
+          <svg viewBox="0 0 640 400" role="img" aria-label="Schematic: ground loop and pump feed a water-cooled condenser; compressor drives a chiller tank; chilled water goes through a pump to the AHU coil, which blows cold air into the cold room.">
+            <defs>
+              <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3a22"/><stop offset="1" stop-color="#0b1a10"/></linearGradient>
+              <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b6d66"/><stop offset=".5" stop-color="#a9b8b2"/><stop offset="1" stop-color="#4c5c56"/></linearGradient>
+            </defs>
+            <!-- ground -->
+            <rect x="0" y="290" width="640" height="110" fill="url(#soil)"/>
+            <line x1="0" y1="290" x2="640" y2="290" stroke="#2f6b3c" stroke-width="2"/>
+            <text x="12" y="386" fill="#6fa47a" font-family="JetBrains Mono,monospace" font-size="10">SOIL · STABLE ~25–27 °C ALL YEAR</text>
+            <!-- ground loop serpentine -->
+            <path class="flow" d="M70 290 V320 H560 V336 H40 V352 H560 V368 H70" fill="none" stroke="#6fd36b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- ground pump & riser -->
+            <path class="flow rev" d="M70 290 V250 H110" fill="none" stroke="#6fd36b" stroke-width="3"/>
+            <path class="flow" d="M150 250 H170 V226" fill="none" stroke="#6fd36b" stroke-width="3"/>
+            <path class="flow" d="M170 280 V300" fill="none" stroke="#6fd36b" stroke-width="3" opacity=".6"/>
+            <circle cx="130" cy="250" r="18" fill="#22362c" stroke="#6fd36b" stroke-width="2"/>
+            <path d="M122 250 L140 250 M134 244 L140 250 L134 256" stroke="#6fd36b" stroke-width="2" fill="none"/>
+            <!-- condenser tank -->
+            <rect x="150" y="160" width="44" height="120" rx="20" fill="url(#steel)" stroke="#2c3a35"/>
+            <!-- refrigerant loop -->
+            <path class="flow" d="M194 190 H232 V110 H300" fill="none" stroke="#ff8a3d" stroke-width="3"/>
+            <path class="flow" d="M352 110 H420 V170" fill="none" stroke="#ff8a3d" stroke-width="3"/>
+            <path class="flow rev" d="M194 240 H300 V258 H420 V240" fill="none" stroke="#ff8a3d" stroke-width="3" opacity=".75"/>
+            <!-- compressor -->
+            <rect x="300" y="88" width="52" height="44" rx="10" fill="#26302d" stroke="#ff8a3d" stroke-width="2"/>
+            <circle cx="326" cy="110" r="10" fill="none" stroke="#ff8a3d" stroke-width="2"/>
+            <!-- chiller tank -->
+            <rect x="396" y="168" width="52" height="96" rx="22" fill="url(#steel)" stroke="#2c3a35"/>
+            <!-- chilled water loop -->
+            <path class="flow" d="M448 200 H470 V256 H486" fill="none" stroke="#4aa8ff" stroke-width="3"/>
+            <path class="flow" d="M518 256 H528 V218" fill="none" stroke="#4aa8ff" stroke-width="3"/>
+            <path class="flow rev" d="M448 236 H460 V150 H520 V164" fill="none" stroke="#4aa8ff" stroke-width="3" opacity=".7"/>
+            <circle cx="502" cy="256" r="16" fill="#1f2e3a" stroke="#4aa8ff" stroke-width="2"/>
+            <path d="M494 256 L510 256 M505 251 L510 256 L505 261" stroke="#4aa8ff" stroke-width="2" fill="none"/>
+            <!-- AHU -->
+            <rect x="508" y="164" width="40" height="56" rx="6" fill="#1d3a4a" stroke="#4aa8ff" stroke-width="2"/>
+            <path d="M514 174 H542 M514 182 H542 M514 190 H542 M514 198 H542 M514 206 H542" stroke="#4aa8ff" stroke-width="1.5" opacity=".7"/>
+            <!-- cold room -->
+            <rect x="556" y="96" width="78" height="190" rx="4" fill="#122a33" stroke="#7fb8d6" stroke-width="2"/>
+            <rect x="566" y="214" width="26" height="20" fill="#3e6b2a"/><rect x="596" y="214" width="26" height="20" fill="#5a8a2d"/>
+            <rect x="566" y="238" width="26" height="20" fill="#5a8a2d"/><rect x="596" y="238" width="26" height="20" fill="#3e6b2a"/>
+            <rect x="566" y="262" width="56" height="20" fill="#4a7b2b"/>
+            <path class="flow" d="M560 130 C585 125 600 150 625 140" fill="none" stroke="#9fd6ff" stroke-width="2"/>
+            <path class="flow" d="M560 160 C585 155 600 180 625 170" fill="none" stroke="#9fd6ff" stroke-width="2"/>
+            <path class="flow" d="M560 190 C585 185 600 205 625 198" fill="none" stroke="#9fd6ff" stroke-width="2"/>
+            <!-- number badges -->
+            <g font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" text-anchor="middle">
+              <g><circle cx="300" cy="352" r="11" fill="#0a1f16" stroke="#6fd36b" stroke-width="1.5"/><text x="300" y="356" fill="#6fd36b">1</text></g>
+              <g><circle cx="130" cy="218" r="11" fill="#0a1f16" stroke="#6fd36b" stroke-width="1.5"/><text x="130" y="222" fill="#6fd36b">2</text></g>
+              <g><circle cx="172" cy="142" r="11" fill="#0a1f16" stroke="#ff8a3d" stroke-width="1.5"/><text x="172" y="146" fill="#ff8a3d">3</text></g>
+              <g><circle cx="326" cy="70" r="11" fill="#0a1f16" stroke="#ff8a3d" stroke-width="1.5"/><text x="326" y="74" fill="#ff8a3d">4</text></g>
+              <g><circle cx="422" cy="150" r="11" fill="#0a1f16" stroke="#4aa8ff" stroke-width="1.5"/><text x="422" y="154" fill="#4aa8ff">5</text></g>
+              <g><circle cx="502" cy="284" r="11" fill="#0a1f16" stroke="#4aa8ff" stroke-width="1.5"/><text x="502" y="288" fill="#4aa8ff">6</text></g>
+              <g><circle cx="528" cy="140" r="11" fill="#0a1f16" stroke="#4aa8ff" stroke-width="1.5"/><text x="528" y="144" fill="#4aa8ff">7</text></g>
+              <g><circle cx="595" cy="78" r="11" fill="#0a1f16" stroke="#eef5ee" stroke-width="1.5"/><text x="595" y="82" fill="#eef5ee">8</text></g>
+            </g>
+          </svg>
+        </div>
+        <ol class="parts">
+          <li><span class="pn c-earth">1</span><div><b>Earth heat exchanger</b><span>Buried HDPE loop carries rejected heat into the ground.</span></div></li>
+          <li><span class="pn c-earth">2</span><div><b>Ground circulation pump</b><span>Moves loop water between the soil and the condenser tank.</span></div></li>
+          <li><span class="pn c-hot">3</span><div><b>Water-cooled condenser</b><span>Hands compressor heat to cool ground water, not hot summer air.</span></div></li>
+          <li><span class="pn c-hot">4</span><div><b>Chiller compressor</b><span>Compresses refrigerant vapour; inverter-duty, VFD driven.</span></div></li>
+          <li><span class="pn c-chill">5</span><div><b>Chiller buffer tank</b><span>Refrigerant evaporates inside and chills the stored water.</span></div></li>
+          <li><span class="pn c-chill">6</span><div><b>Chilled-water pump</b><span>Sends 3 °C water to whichever rooms are calling for cooling.</span></div></li>
+          <li><span class="pn c-chill">7</span><div><b>AHU / cooling coil</b><span>Chilled water passes through the coil to cool the supply air.</span></div></li>
+          <li><span class="pn c-room">8</span><div><b>Cold room</b><span>Steady air keeps produce fresh and saleable for longer.</span></div></li>
+        </ol>
+      </div>
+      <div class="legend"><span><i style="background:var(--earth)"></i>Ground-loop heat rejection</span><span><i style="background:var(--hot)"></i>Refrigerant circuit</span><span><i style="background:var(--chill)"></i>Chilled-water delivery</span></div>
+    </figure>
+  </div>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">System in one line</p>
+        <h2>Ground → plant → AHU → room</h2>
+        <p class="lede">The diagram reduced to four engineering decisions for a panel discussion.</p>
+      </div>
+      <div class="chain">
+        <div><span class="k">01</span><h3>Earth loop</h3><p>Carries rejected heat into the ground.</p></div>
+        <div><span class="k">02</span><h3>Chiller core</h3><p>Compressor and buffer tank produce chilled water.</p></div>
+        <div><span class="k">03</span><h3>Room-side AHU</h3><p>Cooling coil delivers controlled cold airflow.</p></div>
+        <div><span class="k">04</span><h3>Cold room</h3><p>Produce is held at a stable design condition.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="modes">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">One design lab · three systems</p>
+        <h2>Select the project architecture</h2>
+        <p class="lede">Each mode has its own engineering inputs, load logic and calculator-linked simulation model.</p>
+      </div>
+      <div class="modes">
+        <a class="mode" href="./simulation/"><span class="tag">MODE 01</span><h3>10 MT single room</h3><p>Original pilot calculator for a compact produce cold room.</p><span class="go">One room · paired baseline/Geo run ↗</span></a>
+        <a class="mode" href="./simulation/"><span class="tag">MODE 02</span><h3>Multi-room hybrid</h3><p>Choose up to five 10 MT rooms served by one central plant.</p><span class="go">1–5 rooms · shared plant ↗</span></a>
+        <a class="mode" href="./simulation/"><span class="tag">MODE 03</span><h3>Mushroom central plant</h3><p>Multiple grow chambers, each with its own crop-stage setpoints.</p><span class="go">Many rooms · one central plant ↗</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="paper">
+        <div class="bad">
+          <h3>Farmer today</h3>
+          <p class="sub">The reality on the ground</p>
+          <ul>
+            <li><span class="ico">!</span><div><b>High spoilage risk</b>Without reliable storage, quality and saleable quantity drop quickly.</div></li>
+            <li><span class="ico">⏱</span><div><b>Forced selling</b>Produce must be sold immediately, even when market prices are weak.</div></li>
+            <li><span class="ico">⚡</span><div><b>High energy burden</b>Conventional refrigeration is costly to run in hot weather.</div></li>
+          </ul>
+        </div>
+        <div class="swap" aria-hidden="true">→</div>
+        <div class="good">
+          <h3>With Geo-AHU</h3>
+          <p class="sub">A ground-smart advantage</p>
+          <ul>
+            <li><span class="ico">✓</span><div><b>Lower spoilage risk</b>Stable temperature and humidity help preserve produce quality.</div></li>
+            <li><span class="ico">↗</span><div><b>Better selling flexibility</b>Farmers can store longer and choose stronger market windows.</div></li>
+            <li><span class="ico">≈</span><div><b>Right load for each job</b>High-ton pre-cooling and lower-ton holding are sized as separate duties.</div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="proof">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Verified proof</p>
+        <h2>Evidence you can inspect</h2>
+        <p class="lede">Reference run EP26-874209F8 · default 10 MT mango cold room · Darbhanga TMYx 2011–2025 weather · DOE EnergyPlus 26.1.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><b class="num">3</b><span>Design modes</span><small>10 MT · multi-room · mushroom</small></div>
+        <div class="stat"><b class="hi num">31.2%</b><span>Lower annual electricity</span><small>10 MT reference run</small></div>
+        <div class="stat"><b class="num">8,760</b><span>Hourly rows</span><small>One complete typical year</small></div>
+        <div class="stat"><b class="num">0</b><span>Severe errors</span><small>Simulation completed cleanly</small></div>
+        <div class="stat"><b>E+ 26.1</b><span>Native engine</span><small>DOE annual simulation</small></div>
+      </div>
+      <div class="run">
+        <div class="run-head"><h3>Darbhanga 10 MT verified reference run</h3><span class="runid">RUN EP26-874209F8</span></div>
+        <div class="run-grid">
+          <div><small>Air-cooled baseline</small><code>25,490 kWh/yr</code></div>
+          <div><small>Geo-AHU electricity</small><code>17,544 kWh/yr</code></div>
+          <div><small>Reduction</small><code style="color:var(--lime)">31.2%</code></div>
+          <div><small>Geo peak demand</small><code>4.08 kW</code></div>
+          <div><small>ERR validation</small><code>0 severe · 8 warnings</code></div>
+          <div><small>Hourly rows</small><code>8,760</code></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">How it works</p>
+        <h2>Hybrid flow in four steps</h2>
+        <p class="lede">Peak pull-down is separated from efficient long-duration holding.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><h3>High-ton pre-cool</h3><p>Fresh warm produce gets rapid pull-down in the booster chamber.</p></div>
+        <div class="step"><h3>Insulated transfer</h3><p>The cooled batch moves through an interlocked transfer path.</p></div>
+        <div class="step"><h3>Geo-AHU holding</h3><p>A lower-ton ground-loop circuit handles the steady holding load.</p></div>
+        <div class="step"><h3>Selected rooms stay stable</h3><p>Only rooms that need cooling use the shared plant at one time.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="research">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Independent research · original papers</p>
+        <h2>Three studies that support the Geo-AHU mechanism</h2>
+        <p class="lede">Ground-source savings in Indian peak weather, water-cooled condenser savings, and a hybrid earth-and-water cooling architecture.</p>
+      </div>
+      <div class="papers">
+        <article class="paper-card">
+          <div><div class="big">36.85%</div><p class="what">electrical energy saved in peak cooling</p></div>
+          <div>
+            <p class="src">IIT Roorkee · Experimental · 2024</p>
+            <h3>Experimental Investigation of Energy-Saving Potential of Ground Source Heat Pump During Peak Hour Operations</h3>
+            <p class="by">Sah, Murugesan &amp; Rajasekar · ASME Journal of Thermal Science and Engineering Applications</p>
+            <p class="body">A 17.58 kW GSHP was tested against a 17.57 kW air-source system in Roorkee: 36.85% cooling-mode and 38.65% heating-mode electrical savings.</p>
+            <p class="rel"><b>GEO-AHU RELEVANCE</b>Strong Indian-climate evidence for the ground-source principle. It is a space-conditioning test, not a cold-storage certification.</p>
+          </div>
+        </article>
+        <article class="paper-card">
+          <div><div class="big">21–27%</div><p class="what">energy saving reported</p></div>
+          <div>
+            <p class="src">Water-cooled condenser · 2017</p>
+            <h3>Performance studies on domestic refrigerators retrofitted with building-integrated water-cooled condenser</h3>
+            <p class="by">P. Saji Raveendran &amp; S. Joseph Sekhar · Energy and Buildings 134</p>
+            <p class="body">Replacing an air-cooled condenser with a water-cooled one gave 21–27% energy savings; the brazed-plate option also reduced TEWI.</p>
+            <p class="rel"><b>GEO-AHU RELEVANCE</b>Direct evidence for the cooler-water condenser and BPHE principle. Domestic-refrigerator scale cannot be copied as a 10 MT guarantee.</p>
+          </div>
+        </article>
+        <article class="paper-card">
+          <div><div class="big">14.0 °C</div><p class="what">lowest optimised outlet-air temperature</p></div>
+          <div>
+            <p class="src">Scientific Reports · Vol. 16 · 2026</p>
+            <h3>Synergizing building-integrated photovoltaic with ground-air and water-air heat exchangers for solar-powered gym cooling</h3>
+            <p class="by">Ben Ali et al. · Scientific Reports 16, Article 2041</p>
+            <p class="body">The optimised hybrid EAHE–WAHE series layout reached 14.0 °C outlet air; the parallel layout produced 41 kWh in August, 64% above the series configuration.</p>
+            <p class="rel"><b>GEO-AHU RELEVANCE</b>Supports a hybrid earth-and-water pre-cooling architecture. It is a building-cooling study, not a refrigeration field trial.</p>
+          </div>
+        </article>
+      </div>
+      <p class="caveat"><b>Important:</b> research-paper percentages belong to their own experimental systems. Geo-AHU's commercial saving will be claimed only after an instrumented side-by-side pilot in Bihar.</p>
+    </div>
+  </section>
+
+  <section class="band" id="example">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Example calculator result</p>
+        <h2>Three 10 MT mango rooms in Samastipur</h2>
+        <p class="lede">One central 10 TR plant, two rooms active at a time, 51 °C design ambient, ₹8.5/kWh tariff. Your numbers change with crop, district and room size.</p>
+      </div>
+      <div class="example">
+        <div class="ex-hero">
+          <p class="eyebrow">Modelled daily energy saved</p>
+          <div class="big">45.76<small>kWh/day</small></div>
+          <dl>
+            <dt>Monthly saving</dt><dd>₹11,670</dd>
+            <dt>4-month season</dt><dd>₹46,680</dd>
+            <dt>Avoided emissions</dt><dd>983 kg CO₂/mo</dd>
+            <dt>Central plant</dt><dd>1 × 10 TR</dd>
+          </dl>
+        </div>
+        <div>
+          <div class="tbl">
+            <table>
+              <thead><tr><th>Energy comparison</th><th>Conventional</th><th>Geo-assisted</th></tr></thead>
+              <tbody>
+                <tr><td>Net COP</td><td>2.25</td><td class="geo">3.55</td></tr>
+                <tr><td>Active peak draw</td><td>13.12 kW</td><td class="geo">8.74 kW</td></tr>
+                <tr><td>8 h pull-down</td><td>104.96 kWh</td><td class="geo">69.95 kWh</td></tr>
+                <tr><td>16 h holding</td><td>48.07 kWh</td><td class="geo">37.32 kWh</td></tr>
+                <tr><td>Daily total</td><td>153.03 kWh</td><td class="geo">107.27 kWh</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="ex-note">Estimate based on COP, auxiliary load and simultaneous-room schedule. It is not a saving guarantee.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" style="padding-top:0">
+    <div class="wrap">
+      <div class="final">
+        <p class="eyebrow">Room planner</p>
+        <h2>Size your cold store in a few minutes.</h2>
+        <p class="lede">Pick your district, crop and room count. The planner calculates load, plant size, power supply, equipment list and running cost live.</p>
+        <div class="ctas"><a class="btn btn-lime" href="./simulation/">Open room planner <span class="arr">↗</span></a><a class="btn btn-ghost" href="#proof">See the reference run</a></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <b>GEO-AHU · DOE ENERGYPLUS PIPELINE</b>
+    <span>Pre-design simulation, not equipment certification. Manufacturer curves and measured soil tests remain required before guaranteed performance or procurement.</span>
+  </div>
+</footer>
+</body>
+</html>

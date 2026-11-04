@@ -485,7 +485,7 @@ def build(c, mcycle, tag):
     P(obj("Output:VariableDictionary", "Regular"))
     P(obj("Output:Diagnostics", "DisplayExtraWarnings", "DisplayUnusedSchedules"))
     P(obj("Output:Table:SummaryReports", "AllSummary"))
-    P(obj("OutputControl:Table:Style", "HTML"))
+    P(obj("OutputControl:Table:Style", "HTML", "JtoKWH"))
     P(obj("Output:SQLite", "SimpleAndTabular"))
     meta = dict(sphere=sm, dx=curves)
     return "\n".join(parts), meta
@@ -506,6 +506,8 @@ VARIANTS = {
     "mcycle_ec": dict(mcycle=True, overrides={"ec_fans": True}),
     "mcycle_ec_hlow": dict(mcycle=True, overrides={"ec_fans": True, "h_eff": 1.5}),
     "mcycle_ec_hhigh": dict(mcycle=True, overrides={"ec_fans": True, "h_eff": 6.0}),
+    "mcycle_ec_pessimistic": dict(mcycle=True, overrides={"ec_fans": True, "ec_low_flow_fraction": 0.7, "ec_low_power_fraction": 0.40,
+                                                       "mcycle_dewpoint_effectiveness": 0.45, "mcycle_parasitic_w": 800.0}),
     "mcycle_ec_eps45": dict(mcycle=True, overrides={"ec_fans": True, "mcycle_dewpoint_effectiveness": 0.45}),
 }
 

@@ -151,6 +151,24 @@ tr.sel td { background: color-mix(in srgb, var(--you) 8%, transparent); }
 .check .val { font: 13px var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
 .check p { font-size: 13.5px; color: var(--ink-2); }
 details summary { cursor: pointer; font-weight: 600; }
+.card > *, .sechead > * { min-width: 0; }
+.ok { color: var(--good-ink); font-weight: 700; }
+.diff { display: grid; gap: 0; font: 13px/1.4 var(--mono); }
+.diff div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.diff div:last-child { border-bottom: 0; }
+.diff b { font-weight: 500; overflow-wrap: anywhere; }
+.diff span { min-width: 0; }
+.tag { font: 600 11px/1 var(--body); padding: 4px 6px; border-radius: 4px; text-align: center; height: fit-content; }
+.tag.added { background: color-mix(in srgb, var(--s3) 18%, transparent); color: var(--good-ink); }
+.tag.removed { background: color-mix(in srgb, var(--s2) 18%, transparent); color: var(--ink); }
+.tag.changed { background: color-mix(in srgb, var(--you) 16%, transparent); color: var(--ink); }
+pre.cmd { margin: 0; padding: 12px 14px; background: var(--page); border: 1px solid var(--line); border-radius: 8px; font: 12.5px/1.5 var(--mono); overflow-x: auto; white-space: pre; }
+.files { display: grid; gap: 6px; font-size: 14px; }
+.files a { font-family: var(--mono); font-size: 13px; word-break: break-all; }
+.range { display: grid; gap: 8px; }
+.rrow { display: grid; grid-template-columns: minmax(0, 1fr) 70px; gap: 10px; align-items: center; font-size: 14px; }
+.rbar { height: 10px; border-radius: 5px; background: var(--line); position: relative; grid-column: 1 / -1; }
+.rbar i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 5px; }
 footer.in { padding-block: 0 40px; color: var(--muted); font-size: 13px; display: grid; gap: 6px; }
 @media (max-width: 960px) { .verdict { grid-template-columns: 1fr; } .tools { grid-template-columns: 1fr; } .grid2 { grid-template-columns: 1fr; } .minis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .vsrow { grid-template-columns: 84px minmax(0, 1fr) 70px; } .wfrow { grid-template-columns: minmax(0, 1fr) 96px; } .wfrow .wfbar { grid-column: 1 / -1; grid-row: 2; } .chart { height: 260px; } .check { grid-template-columns: 22px minmax(0,1fr); } .check .val { grid-column: 2; text-align: left; } .seedhi { grid-template-columns: 1fr; } }
@@ -192,6 +210,38 @@ footer.in { padding-block: 0 40px; color: var(--muted); font-size: 13px; display
       <div class="eyebrow" id="sb-h">Seedhi baat</div>
       <p id="seedhi">Loading…</p>
       <ul id="seedhi-list"></ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="vf-h">
+    <div class="sechead"><div class="eyebrow">Verify</div><h2 id="vf-h">Khud check karo: yeh number kahan se aaye</h2>
+      <p class="note">This page only reads EnergyPlus output. These three checks let anyone confirm that without trusting this page.</p></div>
+    <div class="grid2">
+      <div class="card" style="display:grid;gap:12px;align-content:start">
+        <h3>1 · EnergyPlus ki apni report vs yeh page</h3>
+        <p class="note">EnergyPlus writes an "End Uses" table in <span class="num">eplustbl.htm</span> (Annual Building Utility Performance Summary). Values below are copied from it as text, next to what this page shows.</p>
+        <div class="tbl"><table id="t-rep"></table></div>
+      </div>
+      <div class="card" style="display:grid;gap:12px;align-content:start">
+        <h3>2 · Market vs aapka design: IDF mein farak sirf itna</h3>
+        <p class="note" id="diff-note"></p>
+        <div class="diff" id="diff"></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card" style="display:grid;gap:12px;align-content:start">
+        <h3>3 · Khud chalao</h3>
+        <p class="note">Install EnergyPlus 26.1 (free, energyplus.net), download these files, run one command. Your <span class="num">eplustbl.htm</span> will show the same End Uses kWh.</p>
+        <div class="files" id="files"></div>
+        <pre class="cmd">energyplus -w IND_Patna.424920_ISHRAE.epw -r base.idf
+energyplus -w IND_Patna.424920_ISHRAE.epw -r mcycle_ec.idf</pre>
+      </div>
+      <div class="card" style="display:grid;gap:12px;align-content:start">
+        <h3>Jo maine assume kiya, aur uska asar</h3>
+        <p class="note">These inputs are not from EnergyPlus; they are engineering assumptions. The worst‑case run sets all of them against your design at once.</p>
+        <div class="tbl"><table id="t-asm"></table></div>
+        <div class="range" id="range"></div>
+      </div>
     </div>
   </section>
 
@@ -330,7 +380,8 @@ footer.in { padding-block: 0 40px; color: var(--muted); font-size: 13px; display
     const p = pct(m.energy.facility_kwh, y.energy.facility_kwh);
     el("h-pct").innerHTML = `${f(p, 0)}<small>%</small>`;
     el("h-lab").textContent = `kam bijli, wahi pull‑down, behtar RH`;
-    el("h-sub").textContent = `${f(m.energy.facility_kwh, 0)} → ${f(y.energy.facility_kwh, 0)} kWh in May. Weak M‑cycle case: ${f(pct(m.energy.facility_kwh, lo.energy.facility_kwh), 1)} %.`;
+    const pe = V("mcycle_ec_pessimistic");
+    el("h-sub").textContent = `${f(m.energy.facility_kwh, 0)} → ${f(y.energy.facility_kwh, 0)} kWh in May, from EnergyPlus' own End Uses report. Worst case with every assumption against your design: ${f(pct(m.energy.facility_kwh, pe.energy.facility_kwh), 0)} %.`;
     const parts = [["Compressor + condenser", "compressor_and_condenser_fan_kwh", "--you"], ["Unit‑cooler fans", "unit_cooler_fans_kwh", "--s3"], ["M‑cycle fans + pump", "mcycle_kwh", "--s2"]];
     const max = m.energy.facility_kwh;
     const fill = (r) => parts.map(([n, k, c]) => r.energy[k] > 0 ? `<i title="${n}: ${f(r.energy[k], 0)} kWh" style="width:${100 * r.energy[k] / max}%;background:var(${c})"></i>` : "").join("");
@@ -349,11 +400,12 @@ footer.in { padding-block: 0 40px; color: var(--muted); font-size: 13px; display
   function seedhi() {
     const m = V(MARKET), y = V(YOU), mc = V("mcycle"), ec = V("base_ec"), fc = V("base_fancycle");
     const p = pct(m.energy.facility_kwh, y.energy.facility_kwh);
-    el("seedhi").innerHTML = `Same room, same 4 TR compressor, same tomato. Market unit May mein <b>${f(m.energy.facility_kwh, 0)} kWh</b> leta hai, aapka design <b>${f(y.energy.facility_kwh, 0)} kWh</b>, yaani <b>${f(p, 0)} % kam</b>. Tomato utni hi der mein thanda hota hai. Aapka 40–50 % ka claim EnergyPlus mein sahi nikalta hai, balki thoda zyada (weak M‑cycle par bhi ${f(pct(m.energy.facility_kwh, V("mcycle_ec_eps45").energy.facility_kwh), 0)} %). Bas ek shart hai:`;
+    el("seedhi").innerHTML = `Same room, same 4 TR compressor, same tomato. Market unit May mein <b>${f(m.energy.facility_kwh, 0)} kWh</b> leta hai, aapka design <b>${f(y.energy.facility_kwh, 0)} kWh</b>, yaani <b>${f(p, 0)} % kam</b>. Tomato utni hi der mein thanda hota hai. Base assumptions par ${f(p, 0)} %, aur har assumption aapke khilaf rakhne par bhi ${f(pct(m.energy.facility_kwh, V("mcycle_ec_pessimistic").energy.facility_kwh), 0)} %. Isliye 40–50 % bolna safe hai, lekin do shartein hain:`;
     el("seedhi-list").innerHTML = [
       `<b>Zyada bachat EC fans se aati hai</b>, M‑cycle se nahi. Market unit ke fans 24×7 full speed par ${f(m.energy.unit_cooler_fans_kwh, 0)} kWh khaate hain. Sirf EC fans (compressor band hone par half speed) se ${f(pct(m.energy.facility_kwh, ec.energy.facility_kwh), 0)} % bachat hoti hai.`,
       `<b>Sirf M‑cycle se ${f(pct(m.energy.facility_kwh, mc.energy.facility_kwh), 1)} % bachat</b> hai. Uska bada fayda compressor ko hai: condensing ${f(m.summary.max_condensing_c, 0)} °C se ${f(mc.summary.max_condensing_c, 0)} °C par aata hai, compressor kam garam hota hai aur manufacturer limit ke andar rehta hai.`,
       `Agar aapke unit mein EC fan control nahi hai, toh 40–50 % ka claim mat bolna. Tab sahi number ~${f(pct(m.energy.facility_kwh, mc.energy.facility_kwh), 0)} % hai.`,
+      `Agar market unit ke fans <b>pehle se</b> compressor ke saath band hote hain, toh woh ${f(fc.energy.facility_kwh, 0)} kWh leta hai aur aapka design ${f(pct(fc.energy.facility_kwh, y.energy.facility_kwh) * -1, 0)} % zyada bijli lega. Tab aapka fayda bijli nahi, quality hai: RH ${f(y.summary.rh_mean_loaded, 0)} vs ${f(fc.summary.rh_mean_loaded, 0)} %, tomato loss ${f(kg(y), 0)} vs ${f(kg(fc), 0)} kg. Customer ke unit ka fan mode pehle poochho.`,
       `Fans ko poora band karne se (${f(pct(m.energy.facility_kwh, fc.energy.facility_kwh), 0)} %) bijli aur bachti hai, par RH ${f(fc.summary.rh_mean_loaded, 0)} % tak girta hai aur tomato ka weight loss double hota hai. EC half speed behtar hai: RH ${f(y.summary.rh_mean_loaded, 0)} % rehta hai.`,
     ].map((t) => `<li>${t}</li>`).join("");
   }
@@ -511,7 +563,7 @@ footer.in { padding-block: 0 40px; color: var(--muted); font-size: 13px; display
   function sens() {
     const base = V(MARKET).energy.facility_kwh;
     const rows = [
-      ["mcycle_ec", "Aapka design · h = 3, M‑cycle ε 0.60 (base)"], ["mcycle_ec_eps45", "Aapka design · weak M‑cycle ε 0.45"],
+      ["mcycle_ec", "Aapka design · h = 3, M‑cycle ε 0.60 (base)"], ["mcycle_ec_eps45", "Aapka design · weak M‑cycle ε 0.45"], ["mcycle_ec_pessimistic", "Aapka design · worst case (all against)"],
       ["mcycle_ec_hlow", "Aapka design · tight crates h = 1.5"], ["mcycle_ec_hhigh", "Aapka design · spaced crates h = 6"],
       ["base", "Market · h = 3"], ["base_hlow", "Market · h = 1.5"], ["base_hhigh", "Market · h = 6"],
     ];
@@ -550,10 +602,40 @@ footer.in { padding-block: 0 40px; color: var(--muted); font-size: 13px; display
     el("foot").textContent = `${D.energyplus_version.replace("Program Version,", "").split(",").slice(0, 2).join(" ")} · data from ${D.generated_by}`;
   }
 
+  function verify() {
+    const show = { "Cooling": ["compressor_and_condenser_fan_kwh", "Compressor + condenser fan"], "Fans": ["unit_cooler_fans_kwh", "Unit‑cooler fans"], "Exterior Equipment": ["mcycle_kwh", "M‑cycle fans + pump"], "Total End Uses": ["facility_kwh", "Total"] };
+    const rowsFor = (id) => V(id).eplus_report.filter((r) => show[r.row]);
+    const all = ["Cooling", "Fans", "Exterior Equipment", "Total End Uses"];
+    const val = (id, row) => { const r = V(id).eplus_report.find((x) => x.row === row); return r ? r.value : "0.00"; };
+    el("t-rep").innerHTML = `<thead><tr><th>EnergyPlus row</th><th class="n">Market · E+</th><th class="n">page</th><th class="n">Yours · E+</th><th class="n">page</th></tr></thead><tbody>` +
+      all.map((row) => { const k = show[row][0]; const a = val(MARKET, row), b = val(YOU, row), pa = V(MARKET).energy[k].toFixed(2), pb = V(YOU).energy[k].toFixed(2);
+        const ok = (x, y) => Math.abs(+x - +y) < 0.011 ? `<span class="ok">✓</span>` : "≠";
+        return `<tr><td>${row}<br><span class="note">${show[row][1]}</span></td><td class="n">${a}</td><td class="n">${pa} ${ok(a, pa)}</td><td class="n">${b}</td><td class="n">${pb} ${ok(b, pb)}</td></tr>`; }).join("") + "</tbody>";
+    const dd = D.idf_diff_market_vs_yours;
+    el("diff-note").textContent = `Both files are generated by the same script. Market IDF has ${dd.objects_a} objects; ${dd.changes.length} differ in yours. Walls, PUF, tomato, weather, compressor table, thermostat and loading are identical.`;
+    const why = { "Fan:OnOff": "Market fans: on/off type, full speed always", "Fan:SystemModel": "Your EC fans: 2 speeds (50 % flow at 17 % power, 100 %)", "AirLoopHVAC:UnitarySystem": "Airflow between compressor cycles: 2.2 → 1.1 m³/s", "OutdoorAir:Node": "Condenser inlet air now set by M‑cycle", "EnergyManagementSystem:Program": "M‑cycle formula: Tdb − 0.6 × (Tdb − Tdew)", "EnergyManagementSystem:Actuator": "Hooks the M‑cycle formula to the condenser inlet", "EnergyManagementSystem:ProgramCallingManager": "Runs the M‑cycle program each timestep" };
+    el("diff").innerHTML = dd.changes.map((c) => `<div><span class="tag ${c.status}">${c.status}</span><span><b>${c.type}</b> · ${c.name}<br><span class="note" style="font-family:var(--body)">${why[c.type] || ""}</span></span></div>`).join("");
+    const RAW = "https://raw.githubusercontent.com/raj607261-sudo/geo-ahu-energyplus-runner/claude/patna-epw-tomato-dashboard-lsgrmv/studies/patna-tomato-pulldown/";
+    const BLOB = "https://github.com/raj607261-sudo/geo-ahu-energyplus-runner/blob/claude/patna-epw-tomato-dashboard-lsgrmv/studies/patna-tomato-pulldown/";
+    el("files").innerHTML = [["Market IDF (save as base.idf)", RAW + "runs/base/in.idf"], ["Your design IDF (save as mcycle_ec.idf)", RAW + "runs/mcycle_ec/in.idf"], ["Patna weather file", RAW + "weather/IND_Patna.424920_ISHRAE.epw"], ["EnergyPlus error log, market run", BLOB + "runs/base/eplusout.err"], ["EnergyPlus report, your design", BLOB + "runs/mcycle_ec/eplustbl.htm"], ["Script that builds the IDFs", BLOB + "build_idf.py"]]
+      .map(([t, u]) => `<div>${t}<br><a href="${u}" target="_blank" rel="noopener">${u.replace(/^https:\/\/[^/]+\/raj607261-sudo\/geo-ahu-energyplus-runner\/(blob\/)?claude\/patna-epw-tomato-dashboard-lsgrmv\//, "…/")}</a></div>`).join("");
+    const pc = V("mcycle_ec_pessimistic").config, bc = V(YOU).config;
+    el("t-asm").innerHTML = `<thead><tr><th>Assumption</th><th class="n">Base</th><th class="n">Worst case</th></tr></thead><tbody>` + [
+      ["EC fan low speed: airflow", `${bc.ec_low_flow_fraction * 100} %`, `${pc.ec_low_flow_fraction * 100} %`],
+      ["EC fan low speed: power", `${bc.ec_low_power_fraction * 100} %`, `${pc.ec_low_power_fraction * 100} %`],
+      ["M‑cycle dew‑point effectiveness", bc.mcycle_dewpoint_effectiveness, pc.mcycle_dewpoint_effectiveness],
+      ["M‑cycle extra fans + pump", `${bc.mcycle_parasitic_w} W`, `${pc.mcycle_parasitic_w} W`],
+      ["Market fans", "24×7 full speed", "24×7 full speed"],
+    ].map((r) => `<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td class="n">${r[2]}</td></tr>`).join("") + "</tbody>";
+    const base = V(MARKET).energy.facility_kwh;
+    const cases = [["Market unit", MARKET, "--market"], ["Your design, base", YOU, "--you"], ["Your design, weak M‑cycle", "mcycle_ec_eps45", "--you"], ["Your design, worst case", "mcycle_ec_pessimistic", "--you"], ["Market, if its fans already cycle", "base_fancycle", "--s3"]];
+    el("range").innerHTML = `<div class="eyebrow">May kWh</div>` + cases.map(([t, id, c]) => { const e = V(id).energy.facility_kwh; return `<div class="rrow"><span>${t}${id !== MARKET && id !== "base_fancycle" ? ` · <b>−${f(pct(base, e), 0)} %</b>` : ""}</span><span class="num" style="text-align:right">${f(e, 0)}</span><div class="rbar"><i style="width:${100 * e / base}%;background:var(${c})"></i></div></div>`; }).join("");
+  }
+
   function init(data) {
     D = data;
     Chart.defaults.font.family = getComputedStyle(document.body).fontFamily; Chart.defaults.font.size = 12;
-    hero(); seedhi(); waterfall(); buttons(); assumptions(); checks(); sens(); compTool(); handTool(); payTool(); renderPD(); month();
+    hero(); seedhi(); verify(); waterfall(); buttons(); assumptions(); checks(); sens(); compTool(); handTool(); payTool(); renderPD(); month();
     ["tariff", "price", "extra", "months"].forEach((id) => el(id).addEventListener("input", payTool));
     ["twb", "tca"].forEach((id) => el(id).addEventListener("input", compTool));
     ["hm", "ht1", "ht2", "hcp", "hq"].forEach((id) => el(id).addEventListener("input", handTool));

@@ -60,6 +60,9 @@
   "mcycle_water_bleed_factor": 1.25,
   "mcycle_min_outdoor_c": 24.0,
   "tariff_inr_per_kwh": 8.5,
+  "ec_fans": false,
+  "ec_low_flow_fraction": 0.5,
+  "ec_low_power_fraction": 0.17,
   "fan_cycling": true
  },
  "sphere": {

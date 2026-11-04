@@ -471,7 +471,7 @@ AirLoopHVAC:UnitarySystem,
   ,
   ,
   SupplyAirFlowRate,
-  2.2,
+  2.2000,
   ,
   ,
   ,
@@ -1494,7 +1494,8 @@ Output:Table:SummaryReports,
   AllSummary;
 
 OutputControl:Table:Style,
-  HTML;
+  HTML,
+  JtoKWH;
 
 Output:SQLite,
   SimpleAndTabular;

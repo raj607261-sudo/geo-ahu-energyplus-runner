@@ -254,6 +254,34 @@ def analyse(variant):
     }
 
 
+def eplus_report(variant):
+    """Rows of EnergyPlus' own End Uses table (AnnualBuildingUtilityPerformanceSummary), unmodified."""
+    import sqlite3
+    con = sqlite3.connect(RUNS / variant / "eplusout.sql")
+    rows = con.execute("select RowName, Units, Value from TabularDataWithStrings where ReportName='AnnualBuildingUtilityPerformanceSummary' "
+                       "and TableName='End Uses' and ColumnName='Electricity'").fetchall()
+    con.close()
+    return [{"row": r[0], "units": r[1], "value": r[2].strip()} for r in rows if r[0] and r[2].strip() not in ("", "0.00")]
+
+
+def idf_diff(a, b):
+    """Object-level difference between two generated IDFs (comments ignored)."""
+    import re as _re
+    def objs(v):
+        txt = "\n".join(l for l in (RUNS / v / "in.idf").read_text().splitlines() if not l.startswith("!"))
+        out = {}
+        for m in _re.finditer(r"([A-Za-z:]+),\s*\n(.*?);", txt, _re.S):
+            fields = [x.strip() for x in m.group(2).replace("\n", " ").split(",")]
+            out[(m.group(1), fields[0])] = fields
+        return out
+    A, B = objs(a), objs(b)
+    changes = []
+    for k in sorted(set(A) | set(B)):
+        if A.get(k) != B.get(k):
+            changes.append({"type": k[0], "name": k[1], "status": "added" if k not in A else "removed" if k not in B else "changed"})
+    return {"objects_a": len(A), "objects_b": len(B), "changes": changes}
+
+
 def hand_checks(r):
     c = r["config"]
     L, W, H = c["room_length_m"], c["room_width_m"], c["room_height_m"]
@@ -278,6 +306,8 @@ def hand_checks(r):
 def main():
     variants = sorted(p.name for p in RUNS.iterdir() if (p / "eplusout.sql").exists())
     res = {v: analyse(v) for v in variants}
+    for v in variants:
+        res[v]["eplus_report"] = eplus_report(v)
     epw = HERE / "weather" / "IND_Patna.424920_ISHRAE.epw"
     import csv
     rows = [r for r in csv.reader(epw.open())][8:]
@@ -296,8 +326,9 @@ def main():
                     "header": rows and open(epw).readline().strip(), "may_daily": daily},
         "hand_checks": hand_checks(base),
         "variants": res,
+        "idf_diff_market_vs_yours": idf_diff("base", "mcycle_ec"),
     }
-    main_v = {"base", "mcycle", "base_fancycle", "mcycle_fancycle", "base_ec", "mcycle_ec"}
+    main_v = {"base", "mcycle", "base_fancycle", "mcycle_fancycle", "base_ec", "mcycle_ec", "mcycle_ec_pessimistic"}
     for v, r in res.items():
         if v not in main_v:
             r.pop("month_hourly"); r.pop("pulldown_windows")

@@ -1,4 +1,4 @@
-Program Version,EnergyPlus, Version 26.1.0-6f2e40d102, YMD=2026.11.04 09:31,
+Program Version,EnergyPlus, Version 26.1.0-6f2e40d102, YMD=2026.11.04 10:04,
    ** Warning ** Site:GroundTemperature:BuildingSurface: Some values fall outside the range of 15-25C.
    **   ~~~   ** These values may be inappropriate.  Please consult the Input Output Reference for more details.
    ** Warning ** Sizing: Coil:Cooling:DX:SingleSpeed "CONDENSING UNIT DX COIL": Rated air volume flow rate per watt of rated total cooling capacity is out of range.
@@ -38,4 +38,4 @@ Program Version,EnergyPlus, Version 26.1.0-6f2e40d102, YMD=2026.11.04 09:31,
    *************
    ************* EnergyPlus Warmup Error Summary. During Warmup: 0 Warning; 0 Severe Errors.
    ************* EnergyPlus Sizing Error Summary. During Sizing: 0 Warning; 0 Severe Errors.
-   ************* EnergyPlus Completed Successfully-- 295647 Warning; 0 Severe Errors; Elapsed Time=00hr 00min 22.36sec
+   ************* EnergyPlus Completed Successfully-- 295647 Warning; 0 Severe Errors; Elapsed Time=00hr 00min 10.56sec

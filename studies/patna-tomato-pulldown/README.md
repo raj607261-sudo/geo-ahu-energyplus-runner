@@ -16,11 +16,21 @@ at 17 % power in between).
 |---|---|---|
 | Electricity, May | 932 kWh | 430 kWh (−53.9 %) |
 | Weak M-cycle (ε 0.45) | | 445 kWh (−52.3 %) |
+| Worst case (EC low speed 70 % flow at 40 % power, ε 0.45, 800 W M-cycle fans) | | 592 kWh (−36.4 %) |
 | Core to 13 °C | 8.8 h | 8.8 h |
 | Room RH | 90.9 % | 93.3 % |
 | Tomato weight lost, May | 157 kg | 122 kg |
 
 M-cycle alone: −5.4 %. EC fans alone: −49.1 %. Most of the saving needs the fan control.
+If the market unit already cycles its fans off with the compressor it uses 398 kWh, and your design uses ~8 % more
+electricity than that, but keeps RH at 93 % instead of 79 % and loses 122 kg instead of 326 kg of tomato.
+
+### Verify without trusting the dashboard
+1. Open `runs/base/eplustbl.htm` and `runs/mcycle_ec/eplustbl.htm` (EnergyPlus' own report, kWh): the End Uses
+   table gives 931.84 and 429.62 kWh, the same numbers the dashboard shows.
+2. `diff runs/base/in.idf runs/mcycle_ec/in.idf`: only the fan object, the no-load airflow and the M-cycle
+   EMS objects differ.
+3. Re-run: `energyplus -w weather/IND_Patna.424920_ISHRAE.epw -r runs/mcycle_ec/in.idf`.
 
 ## Results (May, base h = 3 W/m²K)
 

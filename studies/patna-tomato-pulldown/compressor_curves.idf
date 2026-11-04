@@ -1,0 +1,52 @@
+! Excerpt (verbatim) of EnergyPlus 26.1 DataSets/RefrigerationCompressorCurves.idf (CDH Energy Corp. database)
+! Capacity Curve for Copeland-SCROLL-50HZ_R-404A_MED_ZS45K4E-TF5,   !nominal MBtu/h = 37000.0
+! Results in Watts, Inputs:  Sat Suction Temp (C), Sat Discharge Temp (C)
+
+  Curve:Bicubic,
+    ZS45K4E-TF5_R-404A_MED_qcurv,  !- Name
+    2.020e+004,              !- Coefficient1 Constant
+    789.2,                   !- Coefficient2 x
+    12.06,                   !- Coefficient3 x**2
+    57.80,                   !- Coefficient4 y
+    -5.122,                  !- Coefficient5 y**2
+    -4.046,                  !- Coefficient6 x*y
+    0.05391,                 !- Coefficient7 x**3
+    0.02475,                 !- Coefficient8 y**3
+    -0.1098,                 !- Coefficient9 x**2*y
+    -0.05182,                !- Coefficient10 x*y**2
+    -17.8,                   !- Minimum Value of x
+    4.4,                     !- Maximum Value of x
+    10.0,                    !- Minimum Value of y
+    48.9;                    !- Maximum Value of y
+
+! Power Curve for Copeland-SCROLL-50HZ_R-404A_MED_ZS45K4E-TF5,   !nominal kW = 5.1
+! Results in Watts, Inputs:  Sat Suction Temp (C), Sat Discharge Temp (C)
+
+  Curve:Bicubic,
+    ZS45K4E-TF5_R-404A_MED_pwrcurv,  !- Name
+    3328.,                   !- Coefficient1 Constant
+    107.6,                   !- Coefficient2 x
+    1.755,                   !- Coefficient3 x**2
+    23.19,                   !- Coefficient4 y
+    -0.05680,                !- Coefficient5 y**2
+    -2.495,                  !- Coefficient6 x*y
+    0.007069,                !- Coefficient7 x**3
+    0.008684,                !- Coefficient8 y**3
+    -0.03382,                !- Coefficient9 x**2*y
+    0.02252,                 !- Coefficient10 x*y**2
+    -17.8,                   !- Minimum Value of x
+    4.4,                     !- Maximum Value of x
+    10.0,                    !- Minimum Value of y
+    48.9;                    !- Maximum Value of y
+
+!Detailed Compressor: Copeland-SCROLL-50HZ_R-404A_MED_ZS45K4E-TF5,   !nominal MBtu/h = 37000.0, !nominal kW = 5.1
+
+  Refrigeration:Compressor,
+    Copeland-SCROLL-50HZ_R-404A_MED_ZS45K4E-TF5,  !- Name
+    ZS45K4E-TF5_R-404A_MED_pwrcurv,  !- Refrigeration Compressor Power Curve Name
+    ZS45K4E-TF5_R-404A_MED_qcurv,  !- Refrigeration Compressor Capacity Curve Name
+    ,                        !- Rated Superheat {deltaC}
+    18.3,                    !- Rated Return Gas Temperature {C}
+    ,                        !- Rated Liquid Temperature {C}
+    0.0;                     !- Rated Subcooling {deltaC}
+

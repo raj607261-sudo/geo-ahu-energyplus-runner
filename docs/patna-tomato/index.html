@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Patna Tomato Cold Room</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="EnergyPlus 26.1 study: 3 t tomato pulled down from 28 C to 12 C in a 200 sq ft, 80 mm PUF cold room in Patna (May), 4 TR condensing unit with and without an M-cycle condenser pre-cooler.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an engineer's test sheet. Verdict strip first, then the pull-down curve, the month, the tools, and the evidence. */
+:root {
+  --page: #f4f6f5;
+  --surface: #fcfcfb;
+  --ink: #0f1513;
+  --ink-2: #4b5551;
+  --muted: #7d8783;
+  --line: #dfe3e0;
+  --axis: #c3c9c5;
+  --accent: #b23a1e;          /* tomato skin, used only for the target / the subject */
+  --accent-soft: #f6e3dc;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --good: #0ca30c; --good-ink: #006300; --warn: #fab219; --crit: #d03b3b;
+  --display: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0e1211; --surface: #171c1a; --ink: #eef1ef; --ink-2: #c0c7c3; --muted: #8b9590;
+    --line: #2a312e; --axis: #3a423e; --accent: #ef7a5c; --accent-soft: #3a211a;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --good-ink: #0ca30c; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0e1211; --surface: #171c1a; --ink: #eef1ef; --ink-2: #c0c7c3; --muted: #8b9590;
+  --line: #2a312e; --axis: #3a423e; --accent: #ef7a5c; --accent-soft: #3a211a;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --good-ink: #0ca30c; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font: 15px/1.55 var(--body); margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; display: grid; gap: 36px; }
+h1, h2, h3 { font-family: var(--display); font-stretch: 85%; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(28px, 4.4vw, 44px); font-weight: 800; line-height: 1.05; }
+h2 { font-size: 22px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+a { color: var(--s1); }
+section { display: grid; gap: 16px; min-width: 0; }
+.head { display: grid; gap: 12px; }
+.spec { display: flex; flex-wrap: wrap; gap: 8px; }
+.spec span { font: 500 12.5px/1 var(--mono); padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink-2); }
+.spec span b { color: var(--ink); font-weight: 500; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; min-width: 0; }
+.seedhi { border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 10px 10px 0; padding: 14px 18px; display: grid; gap: 6px; }
+.seedhi p { max-width: 90ch; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: 500 13px/1 var(--body); border: 0; background: transparent; color: var(--ink-2); padding: 9px 12px; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.seg button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.kpi .v { font: 800 32px/1.05 var(--display); font-stretch: 80%; }
+.kpi .v small { font-size: 15px; font-weight: 600; color: var(--ink-2); margin-left: 3px; }
+.kpi .s { color: var(--ink-2); font-size: 13px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 600 11.5px/1 var(--body); padding: 4px 8px; border-radius: 999px; border: 1px solid currentColor; width: fit-content; }
+.pill.good { color: var(--good-ink); } .pill.warn { color: var(--ink-2); } .pill.warn::before { content: "▲"; color: var(--warn); font-size: 9px; } .pill.good::before { content: "✓"; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.chart { position: relative; height: 300px; }
+.chart.tall { height: 340px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.legend i.dash { background: repeating-linear-gradient(90deg, var(--accent) 0 5px, transparent 5px 9px) !important; }
+.note { font-size: 13px; color: var(--ink-2); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 12px/1.3 var(--body); color: var(--ink-2); }
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.sel td { background: color-mix(in srgb, var(--s1) 8%, transparent); }
+.tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.tool { display: grid; gap: 12px; align-content: start; }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 12.5px; color: var(--ink-2); }
+.field input, .field select { font: 15px var(--mono); padding: 8px 10px; border: 1px solid var(--axis); border-radius: 6px; background: var(--page); color: var(--ink); width: 100%; }
+.field input[type=range] { padding: 0; accent-color: var(--s1); }
+.out { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13.5px; }
+.out dt { color: var(--ink-2); }
+.out dd { margin: 0; text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.checks { display: grid; gap: 0; }
+.check { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.check .ic { font-weight: 800; }
+.check .ic.ok { color: var(--good-ink); } .check .ic.wn { color: var(--warn); }
+.check .val { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; text-align: right; }
+.check p { font-size: 13px; color: var(--ink-2); }
+details summary { cursor: pointer; font-weight: 600; }
+footer { color: var(--muted); font-size: 12.5px; display: grid; gap: 6px; }
+@media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tools { grid-template-columns: 1fr; } .grid2 { grid-template-columns: 1fr; } }
+@media (max-width: 460px) { .kpis { grid-template-columns: 1fr; } .chart { height: 260px; } .check { grid-template-columns: 22px minmax(0,1fr); } .check .val { grid-column: 2; text-align: left; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="head">
+    <div class="eyebrow">EnergyPlus 26.1 · Patna ISHRAE weather · 1–31 May</div>
+    <h1>3 t tomato, 28 °C → 12 °C, in a 200 sq ft PUF room in Patna</h1>
+    <div class="spec" aria-label="Design inputs">
+      <span>Room <b>20 × 10 × 10 ft</b></span><span>PUF <b>80 mm</b>, U <b id="uval">0.275</b> W/m²K</span>
+      <span>Product <b>3,000 kg</b> + 150 crates</span><span>Plant <b>“4 TR”</b> R‑404A scroll</span>
+      <span>Condenser pre‑cool <b>M‑cycle</b></span><span>Batch <b>every 6 days</b>, 10:00</span>
+    </div>
+  </header>
+
+  <div class="seedhi" id="seedhi" aria-live="polite">
+    <div class="eyebrow">Seedhi baat</div>
+    <p id="seedhi-text">Loading the EnergyPlus results…</p>
+  </div>
+
+  <section aria-labelledby="sc-h">
+    <div class="controls">
+      <h2 id="sc-h" style="font-size:16px">Scenario</h2>
+      <div class="seg" role="group" aria-label="Scenario" id="scen"></div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section aria-labelledby="pd-h">
+    <div class="controls" style="justify-content:space-between">
+      <div style="display:grid;gap:4px"><h2 id="pd-h">Pull‑down of each batch</h2>
+        <p class="note">Product temperature from a 5‑shell sphere model running inside EnergyPlus (EMS). Hour 0 = loading.</p></div>
+      <div class="seg" role="group" aria-label="Batch" id="batches"></div>
+    </div>
+    <div class="grid2">
+      <div class="panel" style="display:grid;gap:10px">
+        <h3>Temperatures</h3>
+        <div class="legend"><span><i style="background:var(--s1)"></i>Tomato mass‑average</span><span><i style="background:var(--s2)"></i>Tomato core</span><span><i style="background:var(--s3)"></i>Room air</span><span><i class="dash"></i>12 °C target</span></div>
+        <div class="chart tall"><canvas id="c-pd" role="img" aria-label="Product and air temperature during pull-down"></canvas></div>
+        <p class="note" id="pd-note"></p>
+      </div>
+      <div class="panel" style="display:grid;gap:10px">
+        <h3>Cooling: what the unit can give vs what it gives</h3>
+        <div class="legend"><span><i style="background:var(--muted)"></i>Available capacity at that moment</span><span><i style="background:var(--s1)"></i>Coil cooling delivered</span><span><i style="background:var(--s2)"></i>Heat coming out of the tomato</span></div>
+        <div class="chart tall"><canvas id="c-q" role="img" aria-label="Coil capacity, delivered cooling and product heat during pull-down"></canvas></div>
+        <p class="note" id="q-note"></p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="mo-h">
+    <h2 id="mo-h">The whole of May</h2>
+    <div class="grid2">
+      <div class="panel" style="display:grid;gap:10px">
+        <h3>Air reaching the condenser</h3>
+        <div class="legend"><span><i style="background:var(--muted)"></i>Patna outdoor dry‑bulb (EPW)</span><span><i style="background:var(--s2)"></i>After M‑cycle (condenser inlet)</span></div>
+        <div class="chart"><canvas id="c-cond" role="img" aria-label="Outdoor temperature and M-cycle condenser inlet temperature in May"></canvas></div>
+        <p class="note" id="cond-note"></p>
+      </div>
+      <div class="panel" style="display:grid;gap:10px">
+        <h3>Electricity per day</h3>
+        <div class="legend" id="day-legend"></div>
+        <div class="chart"><canvas id="c-day" role="img" aria-label="Daily electricity per scenario"></canvas></div>
+        <p class="note">Spikes are the loading days (1, 7, 13, 19, 25 May).</p>
+      </div>
+    </div>
+    <div class="panel tbl">
+      <table id="t-energy"><caption class="eyebrow" style="text-align:left;padding-bottom:8px">May totals by scenario (EnergyPlus meters)</caption></table>
+    </div>
+  </section>
+
+  <section aria-labelledby="tl-h">
+    <h2 id="tl-h">Tools</h2>
+    <div class="tools">
+      <div class="panel tool">
+        <h3>Monthly cost, including tomato lost</h3>
+        <div class="field"><label for="tariff">Electricity tariff, ₹/kWh</label><input id="tariff" type="number" step="0.1" min="0" value="8.5"></div>
+        <div class="field"><label for="price">Tomato wholesale price, ₹/kg</label><input id="price" type="number" step="1" min="0" value="20"></div>
+        <div class="tbl"><table id="t-cost"></table></div>
+        <p class="note">Weight lost = transpiration calculated in EnergyPlus for 5 batches (ASHRAE coefficient for tomato).</p>
+      </div>
+      <div class="panel tool">
+        <h3>Compressor at any condition</h3>
+        <div class="field"><label for="twb">Coil entering wet‑bulb, °C <span class="mono" id="twb-v"></span></label><input id="twb" type="range" min="4" max="26" step="0.1" value="10.8"></div>
+        <p class="note" style="margin-top:-6px">12 °C room at 90 % RH ≈ 10.8 °C wet‑bulb. Just after loading ≈ 14–16 °C.</p>
+        <div class="field"><label for="tca">Air entering condenser, °C <span class="mono" id="tca-v"></span></label><input id="tca" type="range" min="10" max="50" step="0.5" value="43"></div>
+        <dl class="out" id="comp-out"></dl>
+        <p class="note">Copeland ZS45K4E‑TF5 map (EnergyPlus dataset) balanced with the condenser and unit cooler. The same table EnergyPlus used.</p>
+      </div>
+      <div class="panel tool">
+        <h3>Hand check: field heat</h3>
+        <div class="field"><label for="hm">Product mass, kg</label><input id="hm" type="number" value="3000" min="0" step="100"></div>
+        <div class="grid2" style="gap:10px">
+          <div class="field"><label for="ht1">From, °C</label><input id="ht1" type="number" value="28" step="0.5"></div>
+          <div class="field"><label for="ht2">To, °C</label><input id="ht2" type="number" value="12" step="0.5"></div>
+        </div>
+        <div class="field"><label for="hcp">Specific heat, kJ/kg·K</label><input id="hcp" type="number" value="3.98" step="0.01"></div>
+        <div class="field"><label for="hq">Usable capacity, kW</label><input id="hq" type="number" value="13" step="0.5"></div>
+        <dl class="out" id="hand-out"></dl>
+        <p class="note">This is the floor if all the heat could leave the fruit instantly. Real fruit gives heat up slowly, so the actual pull‑down time is longer.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="tr-h">
+    <h2 id="tr-h">Why you can trust these numbers</h2>
+    <div class="grid2">
+      <div class="panel"><div class="checks" id="checks"></div></div>
+      <div class="panel" style="display:grid;gap:14px;align-content:start">
+        <h3>What changes the answer: sensitivity runs</h3>
+        <div class="tbl"><table id="t-sens"></table></div>
+        <p class="note">Each row is a separate full‑month EnergyPlus run. The fruit‑to‑air heat transfer coefficient depends on how the crates are stacked and spaced. It is the input that moves pull‑down time most, so it is shown as a range, not one number.</p>
+      </div>
+    </div>
+    <div class="panel tbl">
+      <details>
+        <summary>Every input and where it comes from</summary>
+        <table id="t-assume" style="margin-top:12px"></table>
+      </details>
+    </div>
+    <div class="panel" style="display:grid;gap:8px">
+      <h3>What this model does not capture</h3>
+      <ul class="note" style="margin:0;padding-left:18px;display:grid;gap:4px" id="limits"></ul>
+    </div>
+  </section>
+
+  <footer>
+    <div id="foot"></div>
+    <div>Inputs, IDF generator, all 10 EnergyPlus IDF and ERR files: <a id="repo" href="https://github.com/raj607261-sudo/geo-ahu-energyplus-runner/tree/claude/patna-epw-tomato-dashboard-lsgrmv/studies/patna-tomato-pulldown" target="_blank" rel="noopener">studies/patna-tomato-pulldown</a></div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function () {
+  const SCEN = [
+    { id: "base", name: "Standard", sw: "--s1" },
+    { id: "mcycle", name: "With M‑cycle", sw: "--s2" },
+    { id: "base_fancycle", name: "Fans cycle", sw: "--s3" },
+    { id: "mcycle_fancycle", name: "M‑cycle + fans cycle", sw: "--s4" },
+  ];
+  let D = null, scen = "base", batch = 3;
+  const charts = {};
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const f = (x, d = 1) => (x == null || isNaN(x)) ? "–" : Number(x).toLocaleString("en-IN", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const el = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  const V = (id) => D.variants[id];
+
+  function hhmm(h) { if (h == null) return "–"; const H = Math.floor(h), M = Math.round((h - H) * 60); return `${H} h ${String(M).padStart(2, "0")} min`; }
+
+  function buildScenarioButtons() {
+    el("scen").innerHTML = SCEN.map((s) => `<button type="button" data-id="${s.id}" aria-pressed="${s.id === scen}"><span class="dot" style="background:var(${s.sw})"></span>${s.name}</button>`).join("");
+    el("scen").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; scen = b.dataset.id; renderAll(); };
+    const bs = V("base").batches;
+    el("batches").innerHTML = bs.map((b, i) => `<button type="button" data-i="${i}" aria-pressed="${i === batch}">May ${b.load_day}${b.outdoor_max_c_during_first_24h >= 42 ? " · hottest" : ""}</button>`).join("");
+    el("batches").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; batch = +b.dataset.i; renderAll(); };
+  }
+
+  function seedhi() {
+    const b = V("base"), m = V("mcycle"), fc = V("base_fancycle");
+    const avg = (arr, k) => arr.reduce((s, x) => s + x[k], 0) / arr.length;
+    const t78 = avg(b.batches, "h_to_7_8_cooling_mean"), c13 = avg(b.batches, "h_core_to_13");
+    const lo = V("base_hlow").batches, hi = V("base_hhigh").batches;
+    const save = b.energy.facility_kwh - m.energy.facility_kwh;
+    const kg = (r) => r.batches.reduce((a, x) => a + x.weight_loss_kg, 0);
+    const kgB = kg(b), kgF = kg(fc);
+    const breakeven = (b.energy.facility_kwh - fc.energy.facility_kwh) * b.config.tariff_inr_per_kwh / (kgF - kgB);
+    el("seedhi-text").innerHTML =
+      `4 TR is enough. Each 3 t batch reaches 14 °C (7/8 cooled) in about <b>${f(t78, 1)} h</b> and the tomato core reaches 13 °C in about <b>${f(c13, 1)} h</b> (range ${f(avg(hi, "h_core_to_13"), 1)}–${f(avg(lo, "h_core_to_13"), 1)} h depending on crate stacking). ` +
+      `The compressor runs at full load for only ${f(b.summary.hours_rtf_100, 1)} h in the whole month. The slow part is heat leaving the fruit, not the machine. ` +
+      `The M‑cycle cuts May electricity by <b>${f(save, 0)} kWh (${f(100 * save / b.energy.facility_kwh, 1)} %)</b> and keeps condensing temperature at or below ${f(m.summary.max_condensing_c, 1)} °C instead of ${f(b.summary.max_condensing_c, 1)} °C, which is easier on the compressor. It does not make the pull‑down faster. ` +
+      `The biggest electricity user is the unit‑cooler fans running 24×7 (${f(b.energy.unit_cooler_fans_kwh, 0)} kWh). Cycling them with the compressor saves ${f(b.energy.facility_kwh - fc.energy.facility_kwh, 0)} kWh, but room RH falls to ${f(fc.summary.rh_mean_loaded, 0)} % and tomato weight loss roughly doubles (${f(kgB, 0)} → ${f(kgF, 0)} kg a month). At ₹${f(D.variants.base.config.tariff_inr_per_kwh, 1)}/kWh that only pays while tomato sells below about <b>₹${f(breakeven, 0)}/kg</b>, and it needs a field trial for hot spots first.`;
+  }
+
+  function kpis() {
+    const r = V(scen), bt = r.batches[batch];
+    const tiles = [
+      { e: "Tomato core to 13 °C", v: f(bt.h_core_to_13, 1), u: "h", s: `7/8 cooled (14 °C mass‑avg) in ${hhmm(bt.h_to_7_8_cooling_mean)}. Batch of May ${bt.load_day}.`, p: `<span class="pill good">Air back to 12 °C</span>` },
+      { e: "Peak cooling after loading", v: f(bt.peak_coil_kw, 1), u: "kW", s: `${f(bt.peak_coil_kw / 3.517, 1)} TR. Unit capacity at that moment ${f(bt.capacity_at_peak_kw, 1)} kW. Room air peaked at ${f(bt.max_air_c, 1)} °C.`, p: r.summary.hours_rtf_100 > 0 ? `<span class="pill warn">Full load ${f(r.summary.hours_rtf_100, 1)} h / month</span>` : "" },
+      { e: "May electricity", v: f(r.energy.facility_kwh, 0), u: "kWh", s: `₹${f(r.energy.facility_kwh * +el("tariff").value, 0)} at ₹${f(+el("tariff").value, 1)}/kWh. Compressor runs ${f(r.summary.compressor_run_hours, 0)} h.`, p: "" },
+      { e: "Room RH with product", v: f(r.summary.rh_mean_loaded, 0), u: "%", s: `Weight loss ${f(bt.weight_loss_pct, 2)} % per 6‑day batch (${f(bt.weight_loss_kg, 0)} kg).`, p: r.summary.rh_mean_loaded >= 85 ? `<span class="pill good">In 85–95 % band</span>` : `<span class="pill warn">Below 85 % for tomato</span>` },
+    ];
+    el("kpis").innerHTML = tiles.map((t) => `<div class="kpi"><div class="eyebrow">${t.e}</div><div class="v num">${t.v}<small>${t.u}</small></div><div class="s">${t.s}</div>${t.p}</div>`).join("");
+  }
+
+  function baseOpts(yTitle, xTitle, extra = {}) {
+    const ink2 = css("--ink-2"), line = css("--line"), axis = css("--axis");
+    return Object.assign({
+      responsive: true, maintainAspectRatio: false, animation: false, parsing: false, normalized: true,
+      interaction: { mode: "index", intersect: false },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: css("--surface"), titleColor: css("--ink"), bodyColor: ink2, borderColor: line, borderWidth: 1, padding: 10, boxPadding: 4, usePointStyle: true } },
+      scales: {
+        x: { type: "linear", title: { display: !!xTitle, text: xTitle, color: ink2 }, grid: { color: line, drawTicks: false }, border: { color: axis }, ticks: { color: ink2, maxRotation: 0 } },
+        y: { title: { display: true, text: yTitle, color: ink2 }, grid: { color: line, drawTicks: false }, border: { color: axis }, ticks: { color: ink2 } },
+      },
+      elements: { point: { radius: 0, hoverRadius: 4, hitRadius: 8 }, line: { borderWidth: 2, tension: 0 } },
+    }, extra);
+  }
+  function draw(id, cfg) { if (charts[id]) charts[id].destroy(); charts[id] = new Chart(el(id), cfg); }
+  const pts = (x, y) => x.map((v, i) => ({ x: v, y: y[i] }));
+
+  function pulldown() {
+    const r = V(scen), w = r.pulldown_windows[batch], bt = r.batches[batch];
+    const ds = [
+      { label: "Tomato mass‑average °C", data: pts(w.t_h, w.tmean), borderColor: css("--s1") },
+      { label: "Tomato core °C", data: pts(w.t_h, w.tcore), borderColor: css("--s2") },
+      { label: "Room air °C", data: pts(w.t_h, w.tair), borderColor: css("--s3") },
+      { label: "Target °C", data: [{ x: w.t_h[0], y: 12 }, { x: w.t_h[w.t_h.length - 1], y: 12 }], borderColor: css("--accent"), borderDash: [5, 4], borderWidth: 1.5 },
+    ];
+    const o = baseOpts("°C", "hours after loading");
+    o.scales.y.suggestedMin = 10; o.scales.y.suggestedMax = 30;
+    o.scales.x.min = -1; o.scales.x.max = 36; o.scales.x.ticks.stepSize = 6;
+    o.plugins.tooltip.callbacks = { title: (it) => `${f(it[0].parsed.x, 1)} h after loading`, label: (c) => `${c.dataset.label.replace(" °C", "")}: ${f(c.parsed.y, 2)} °C` };
+    o.plugins.tooltip.filter = (c) => c.datasetIndex !== 3;
+    draw("c-pd", { type: "line", data: { datasets: ds }, options: o });
+    el("pd-note").innerHTML = `Loaded ${esc(bt.load_time.replace(":02", ":00"))}. Outdoor max in the first 24 h: ${f(bt.outdoor_max_c_during_first_24h, 1)} °C. Mass‑average 12.5 °C at ${hhmm(bt.h_mean_to_12_5)}; core 12.5 °C at ${hhmm(bt.h_core_to_12_5)}.`;
+
+    const q = [
+      { label: "Available capacity kW", data: pts(w.t_h, w.cap_avail_kw), borderColor: css("--muted"), borderWidth: 1.5 },
+      { label: "Coil cooling kW", data: pts(w.t_h, w.q_coil_kw), borderColor: css("--s1") },
+      { label: "Heat out of tomato kW", data: pts(w.t_h, w.q_prod_kw), borderColor: css("--s2") },
+    ];
+    const o2 = baseOpts("kW", "hours after loading");
+    o2.scales.y.min = 0;
+    o2.scales.x.min = -1; o2.scales.x.max = 36; o2.scales.x.ticks.stepSize = 6;
+    o2.plugins.tooltip.callbacks = { title: (it) => `${f(it[0].parsed.x, 1)} h after loading`, label: (c) => `${c.dataset.label.replace(" kW", "")}: ${f(c.parsed.y, 2)} kW` };
+    draw("c-q", { type: "line", data: { datasets: q }, options: o2 });
+    el("q-note").textContent = `Right after loading the coil runs flat out at ${f(bt.peak_coil_kw, 1)} kW for a short while. After that the tomato releases heat slower than the unit can remove it, so the compressor cycles. A bigger compressor would not cool the fruit much faster. Better airflow through the crates would.`;
+  }
+
+  function month() {
+    const b = V("base").month_hourly, m = V("mcycle").month_hourly;
+    const hrs = b.tout.map((_, i) => i / 24 + 1);
+    const o = baseOpts("°C", "day of May");
+    o.scales.x.min = 1; o.scales.x.max = 32; o.scales.x.ticks.stepSize = 5;
+    o.plugins.tooltip.callbacks = { title: (it) => { const h = it[0].parsed.x - 1; return `May ${Math.floor(h) + 1}, ${String(Math.round((h % 1) * 24)).padStart(2, "0")}:00`; }, label: (c) => `${c.dataset.label}: ${f(c.parsed.y, 1)} °C` };
+    draw("c-cond", { type: "line", data: { datasets: [
+      { label: "Outdoor", data: pts(hrs, b.tout), borderColor: css("--muted"), borderWidth: 1.5 },
+      { label: "After M‑cycle", data: pts(hrs, m.tcond_in), borderColor: css("--s2"), borderWidth: 1.5 },
+    ] }, options: o });
+    const ms = V("mcycle").summary, bs = V("base").summary;
+    el("cond-note").textContent = `In hours above 38 °C outdoors, the M‑cycle (dew‑point effectiveness ${D.variants.mcycle.config.mcycle_dewpoint_effectiveness}) feeds the condenser ${f(ms.cond_inlet_mean_when_hot, 1)} °C air instead of ${f(bs.tout_mean_when_hot, 1)} °C. The highest condensing temperature drops from ${f(bs.max_condensing_c, 1)} to ${f(ms.max_condensing_c, 1)} °C.`;
+
+    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    const daily = (id) => { const p = V(id).month_hourly.p_total_kw; return days.map((d) => p.slice((d - 1) * 24, d * 24).reduce((s, x) => s + (x || 0), 0)); };
+    const ds = SCEN.map((s) => ({ label: s.name, data: daily(s.id), backgroundColor: css(s.sw), borderRadius: 3, borderSkipped: "start", borderWidth: 0, categoryPercentage: 0.82, barPercentage: 0.9 }));
+    const o2 = baseOpts("kWh per day", "", { parsing: true });
+    o2.scales.x = { type: "category", grid: { display: false }, border: { color: css("--axis") }, ticks: { color: css("--ink-2"), autoSkip: true, maxRotation: 0 } };
+    o2.plugins.tooltip.callbacks = { title: (it) => `May ${it[0].label}`, label: (c) => `${c.dataset.label}: ${f(c.parsed.y, 1)} kWh` };
+    draw("c-day", { type: "bar", data: { labels: days, datasets: ds }, options: o2 });
+    el("day-legend").innerHTML = SCEN.map((s) => `<span><span class="dot" style="background:var(${s.sw})"></span>${s.name}</span>`).join("");
+  }
+
+  function energyTable() {
+    const rows = [
+      ["Compressor + condenser fan", (r) => r.energy.compressor_and_condenser_fan_kwh, 0, "kWh"],
+      ["Unit‑cooler fans", (r) => r.energy.unit_cooler_fans_kwh, 0, "kWh"],
+      ["M‑cycle fans + pump", (r) => r.energy.mcycle_kwh, 0, "kWh"],
+      ["Total electricity", (r) => r.energy.facility_kwh, 0, "kWh"],
+      ["Cooling delivered by coil", (r) => r.energy.coil_total_kwh_th, 0, "kWh th"],
+      ["Compressor unit COP (month)", (r) => r.energy.seasonal_cop_compressor_unit, 2, ""],
+      ["Compressor run hours", (r) => r.summary.compressor_run_hours, 0, "h"],
+      ["Run hours above map (cond. > 48.9 °C)", (r) => r.summary.run_hours_condensing_above_map_48_9C, 1, "h"],
+      ["M‑cycle water", (r) => r.energy.mcycle_water_litre, 0, "L"],
+      ["Coil condensate", (r) => r.energy.condensate_litre, 0, "L"],
+      ["Mean RH with product", (r) => r.summary.rh_mean_loaded, 1, "%"],
+    ];
+    el("t-energy").innerHTML = el("t-energy").querySelector("caption").outerHTML +
+      `<thead><tr><th></th>${SCEN.map((s) => `<th class="n"><span class="dot" style="background:var(${s.sw});margin-right:6px"></span>${s.name}</th>`).join("")}</tr></thead><tbody>` +
+      rows.map(([lab, fn, d, u]) => `<tr><td>${lab}${u ? ` <span class="note">${u}</span>` : ""}</td>${SCEN.map((s) => `<td class="n">${f(fn(V(s.id)), d)}</td>`).join("")}</tr>`).join("") + "</tbody>";
+  }
+
+  function costTool() {
+    const t = +el("tariff").value || 0, p = +el("price").value || 0;
+    const rows = SCEN.map((s) => { const r = V(s.id); const kg = r.batches.reduce((a, b) => a + b.weight_loss_kg, 0); return { s, e: r.energy.facility_kwh * t, kg, w: kg * p }; });
+    const best = Math.min(...rows.map((x) => x.e + x.w));
+    el("t-cost").innerHTML = `<thead><tr><th>Scenario</th><th class="n">Power ₹</th><th class="n">Tomato lost</th><th class="n">Total ₹</th></tr></thead><tbody>` +
+      rows.map((x) => `<tr${x.s.id === scen ? ' class="sel"' : ""}><td><span class="dot" style="background:var(${x.s.sw});margin-right:6px"></span>${x.s.name}</td><td class="n">${f(x.e, 0)}</td><td class="n">${f(x.kg, 0)} kg</td><td class="n">${f(x.e + x.w, 0)}${Math.abs(x.e + x.w - best) < 0.5 ? " ✓" : ""}</td></tr>`).join("") + "</tbody>";
+    kpis();
+  }
+
+  function compTool() {
+    const twb = +el("twb").value, tca = +el("tca").value;
+    el("twb-v").textContent = twb.toFixed(1); el("tca-v").textContent = tca.toFixed(1);
+    const g = D.dx, tw = g.twb_grid, tc = g.tc_grid, R = g.rows;
+    const idx = (arr, v) => { let i = 0; while (i < arr.length - 2 && v > arr[i + 1]) i++; return i; };
+    const i = idx(tw, twb), j = idx(tc, tca);
+    const tx = (twb - tw[i]) / (tw[i + 1] - tw[i]), ty = (tca - tc[j]) / (tc[j + 1] - tc[j]);
+    const at = (k) => { const v = (a, b) => R[a * tc.length + b][k]; return (1 - tx) * (1 - ty) * v(i, j) + tx * (1 - ty) * v(i + 1, j) + (1 - tx) * ty * v(i, j + 1) + tx * ty * v(i + 1, j + 1); };
+    const q = at("q"), pt = at("pt"), te = at("te"), tcs = at("tc");
+    el("comp-out").innerHTML = `<dt>Cooling capacity</dt><dd>${f(q / 1000, 2)} kW · ${f(q / 3517, 2)} TR</dd><dt>Power (compressor + condenser fan)</dt><dd>${f(pt / 1000, 2)} kW</dd><dt>COP</dt><dd>${f(q / pt, 2)}</dd><dt>Evaporating / condensing</dt><dd>${f(te, 1)} / ${f(tcs, 1)} °C</dd>` +
+      `<dt>Within manufacturer map?</dt><dd>${tcs > 48.9 ? "No: condensing above 48.9 °C, extrapolated" : te >= 4.39 ? "Suction held at 4.4 °C limit" : "Yes"}</dd>`;
+  }
+
+  function handTool() {
+    const m = +el("hm").value, t1 = +el("ht1").value, t2 = +el("ht2").value, cp = +el("hcp").value, q = +el("hq").value;
+    const kwh = m * cp * (t1 - t2) / 3600;
+    const eb = V(scen).batches[batch].product_balance;
+    el("hand-out").innerHTML = `<dt>Field heat to remove</dt><dd>${f(kwh, 1)} kWh</dd><dt>Fastest possible at ${f(q, 1)} kW</dt><dd>${q > 0 ? f(kwh / q, 1) + " h" : "–"}</dd>` +
+      `<dt>EnergyPlus, this batch: field heat</dt><dd>${f(eb.field_heat_released_kwh, 1)} kWh</dd><dt>+ respiration over 6 days</dt><dd>${f(eb.respiration_kwh, 1)} kWh</dd><dt>= heat that left the fruit</dt><dd>${f(eb.heat_out_kwh, 1)} kWh</dd>`;
+  }
+
+  function checks() {
+    const b = V("base"), list = [];
+    const vs = Object.values(D.variants);
+    const allOk = vs.every((r) => r.errfile.completed && r.errfile.severe === 0);
+    list.push([allOk, `All ${vs.length} EnergyPlus runs completed, 0 severe errors`, `${esc(D.energyplus_version.split(",")[2] || "")}`, "Every scenario and sensitivity case is a full 1–31 May simulation at a 2‑minute timestep."]);
+    list.push([true, "Weather is the published Patna ISHRAE EPW", `md5 ${D.weather.md5.slice(0, 8)}…`, `Downloaded from the EnergyPlus weather store. Checksum matches the store's ETag. May: max ${f(Math.max(...D.weather.may_daily.map((d) => d.tmax)), 1)} °C (19 May), mean dew point ${f(D.weather.may_daily.reduce((s, d) => s + d.tdp_mean, 0) / 31, 1)} °C.`]);
+    const cl = Math.max(...vs.map((r) => Math.abs(r.checks.coil_vs_loads_closure_pct)));
+    list.push([cl < 0.5, "Coil cooling equals the sum of all heat entering the room", `≤ ${f(cl, 2)} %`, "Envelope + infiltration + product + respiration + fan heat, each from its own EnergyPlus output, added up independently and compared with the coil's own energy."]);
+    const hb = Math.max(...vs.map((r) => Math.abs(r.checks.zone_air_heat_balance_residual_kwh)));
+    list.push([hb < 0.1, "Zone air heat balance closes", `${f(hb, 2)} kWh / month`, "Residual of EnergyPlus' own zone‑air heat balance terms over the month."]);
+    const pb = Math.max(...vs.flatMap((r) => r.batches.map((x) => Math.abs(x.product_balance.closure_pct))));
+    list.push([pb < 0.1, "Tomato energy balance closes for every batch", `≤ ${f(pb, 3)} %`, "Heat out of fruit = m·cp·ΔT + respiration, checked for 50 batches."]);
+    const hc = D.hand_checks;
+    list.push([Math.abs(b.batches[0].product_balance.field_heat_released_kwh - hc.field_heat_per_batch_kwh) / hc.field_heat_per_batch_kwh < 0.02, "Field heat matches the hand calculation", `${f(hc.field_heat_per_batch_kwh, 1)} kWh`, `3,000 kg × 3.98 kJ/kg·K × 16 K. EnergyPlus releases ${f(b.batches[0].product_balance.field_heat_released_kwh, 1)} kWh (the last 0.1–0.2 K is still in the fruit after 6 days).`]);
+    list.push([true, "EnergyPlus reads the compressor table exactly", "error 3×10⁻⁸", "Capacity EnergyPlus used each timestep, compared with an independent interpolation of the table built from the compressor map."]);
+    const lat = Math.max(...vs.map((r) => Math.abs(r.checks.latent_closure_pct)));
+    list.push([lat < 1, "Moisture balance closes", `≤ ${f(lat, 2)} %`, "Water condensed on the coil = transpiration from tomato + moisture brought in by door/leakage air."]);
+    list.push([null, "Warnings explained", `${f(b.errfile.warnings, 0)} in base run`, "Almost all of them are one repeated advisory: the unit cooler moves more air per kW than a house AC (true for cold‑room coolers). EnergyPlus still runs the coil model; this does not change any result. Others: Patna ground at 29 °C is above EnergyPlus' 15–25 °C typical range (it is real EPW data), and two unused schedules."]);
+    list.push([null, "Compressor map extrapolation is reported, not hidden", `${f(b.summary.run_hours_condensing_above_map_48_9C, 0)} of ${f(b.summary.compressor_run_hours, 0)} h`, `Without M‑cycle, condensing goes up to ${f(b.summary.max_condensing_c, 1)} °C on the hottest afternoons, above the 48.9 °C edge of the manufacturer data, so those hours use extrapolated values. With M‑cycle, 0 h.`]);
+    el("checks").innerHTML = list.map(([ok, t, v, p]) => `<div class="check"><span class="ic ${ok ? "ok" : "wn"}" aria-label="${ok ? "pass" : "note"}">${ok ? "✓" : "!"}</span><div style="display:grid;gap:2px;min-width:0"><strong style="font-size:14px">${t}</strong><p>${p}</p></div><span class="val">${v}</span></div>`).join("");
+  }
+
+  function sens() {
+    const rows = [
+      ["base_hlow", "Standard", "h = 1.5 W/m²K (tightly stacked)"], ["base", "Standard", "h = 3 W/m²K (base)"], ["base_hhigh", "Standard", "h = 6 W/m²K (well spaced, vented)"],
+      ["mcycle_hlow", "M‑cycle", "h = 1.5"], ["mcycle", "M‑cycle", "h = 3 (base)"], ["mcycle_hhigh", "M‑cycle", "h = 6"],
+      ["mcycle_eps45", "M‑cycle", "dew‑point eff. 0.45 (poor)"], ["mcycle_eps75", "M‑cycle", "dew‑point eff. 0.75 (good)"],
+    ];
+    const avg = (r, k) => r.batches.reduce((s, x) => s + x[k], 0) / r.batches.length;
+    el("t-sens").innerHTML = `<thead><tr><th>Case</th><th class="n">Core 13 °C</th><th class="n">7/8 cooled</th><th class="n">Peak air</th><th class="n">May kWh</th></tr></thead><tbody>` +
+      rows.map(([id, s, lab]) => { const r = V(id); return `<tr${id === scen ? ' class="sel"' : ""}><td>${s} · ${lab}</td><td class="n">${f(avg(r, "h_core_to_13"), 1)} h</td><td class="n">${f(avg(r, "h_to_7_8_cooling_mean"), 1)} h</td><td class="n">${f(Math.max(...r.batches.map((b) => b.max_air_c)), 1)} °C</td><td class="n">${f(r.energy.facility_kwh, 0)}</td></tr>`; }).join("") + "</tbody>";
+  }
+
+  function assumptions() {
+    const c = V("base").config, hc = D.hand_checks, dx = D.dx;
+    const A = [
+      ["Weather", "Patna ISHRAE EPW (WMO 424920), May", "EnergyPlus weather store"],
+      ["Room", `20 × 10 × 10 ft = ${hc.floor_area_sqft} sq ft, ${hc.volume_m3} m³`, "Your 200 sq ft; 10 ft height assumed"],
+      ["Panels", `80 mm PUF, k = ${c.puf_conductivity} W/m·K, 0.5 mm PPGI skins → U = ${hc.U_panel_W_m2K} W/m²K; floor same PUF under 100 mm screed`, "Aged PUF value (IS 12436 upper limit)"],
+      ["Outside surface", `Solar absorptance ${c.outer_solar_absorptance}, room fully exposed to sun`, "Off‑white PPGI, conservative"],
+      ["Ground under floor", "29.1 °C in May (EPW 0.5 m ground temperature)", "EPW file header"],
+      ["Tomato", `3,000 kg, cp ${c.tomato_cp / 1000} kJ/kg·K, k ${c.tomato_k} W/m·K, 55 mm fruit, 5‑shell sphere`, "ASHRAE Refrigeration Handbook ch. 19"],
+      ["Respiration", `Becker‑Fricke, f = ${c.resp_f}, g = ${c.resp_g} → ${hc.respiration_w_at_28C} W at 28 °C, ${hc.respiration_w_at_12C} W at 12 °C`, "ASHRAE Refrigeration Handbook ch. 19"],
+      ["Transpiration", `${c.transpiration_k * 1e12} ng/(kg·s·Pa) × vapour‑pressure deficit`, "ASHRAE Refrigeration Handbook ch. 19"],
+      ["Fruit‑to‑air coefficient", `h = ${c.h_eff} W/m²K (Biot ${hc.biot_number}); swept 1.5–6`, "Room cooling of vented crates; most uncertain input"],
+      ["Crates", `150 HDPE crates, ${c.crate_mass_kg} kg, enter at 28 °C`, "20 kg per crate"],
+      ["Loading", `New 3 t batch on May ${c.batch_days.join(", ")} at 10:00 (old batch out 09:00); door half‑open those two hours`, "Assumed operating pattern"],
+      ["Door air", `0.9 × 2.0 m door, Gosney‑Olama flow, strip curtain ${c.strip_curtain_effectiveness * 100} % effective; 0.1 ACH panel leakage`, "ASHRAE Refrigeration Handbook ch. 24"],
+      ["Compressor", "Copeland ZS45K4E‑TF5 scroll, R‑404A, 50 Hz, AHRI‑540 map", "EnergyPlus DataSets/RefrigerationCompressorCurves.idf"],
+      ["Rating of the unit", `${f(dx.rated.q / 1000, 2)} kW at 19.4 °C coil wet‑bulb / 35 °C ambient; ${f(13.06, 1)} kW (3.7 TR) at 12 °C room / 43 °C`, "From the map + coil + condenser balance"],
+      ["Evaporator", `${c.unit_cooler_airflow_m3s} m³/s, ${c.unit_cooler_fan_w} W fans, wet‑coil effectiveness ${c.evap_enthalpy_effectiveness}; suction limited to 4.4 °C`, "Typical 4 TR unit cooler"],
+      ["Condenser", `${c.condenser_ua_w_per_k} W/K heat rejection per K approach, ${c.condenser_fan_w} W fans`, "Typical 4 TR air‑cooled condensing unit"],
+      ["Cycling loss", "Part‑load degradation Cd = 0.15; coil moisture re‑evaporation when compressor is off", "EnergyPlus DX coil model"],
+      ["M‑cycle", `Dew‑point effectiveness ${c.mcycle_dewpoint_effectiveness}, extra fans + pump ${c.mcycle_parasitic_w} W while condenser runs, water × ${c.mcycle_water_bleed_factor} for bleed`, "Field value; lab claims 0.7–0.9, swept 0.45–0.75"],
+      ["Tariff", `₹${c.tariff_inr_per_kwh}/kWh (editable above)`, "Assumed"],
+    ];
+    el("t-assume").innerHTML = `<thead><tr><th>Input</th><th>Value used</th><th>Source</th></tr></thead><tbody>` + A.map((a) => `<tr><td>${a[0]}</td><td>${a[1]}</td><td class="note">${a[2]}</td></tr>`).join("") + "</tbody>";
+    el("uval").textContent = hc.U_panel_W_m2K.toFixed(3);
+    el("limits").innerHTML = [
+      "The room air is treated as fully mixed. Hot spots inside a tight crate stack, and stratification when fans are off, are not shown. That is the main reason fan cycling needs a field trial before you rely on it.",
+      "Every fruit is treated as the same average fruit. Fruit in the middle of a pallet stack will cool slower than the curve; the low‑h run (1.5 W/m²K) is the closer guide for them.",
+      "Compressor on/off is modelled through the EnergyPlus cycling‑loss curve, not by individual starts. Real thermostat swing (about ±1 K) is not modelled.",
+      "The M‑cycle is modelled by its outlet temperature (dew‑point effectiveness), its fan/pump power and its water use. Its own internal heat and mass transfer is not simulated; scaling or dust that lowers effectiveness is covered only by the 0.45 case.",
+      "One month (May) of typical‑year weather. A heat wave hotter than the 43 °C in this file would push condensing temperature higher still without M‑cycle.",
+    ].map((t) => `<li>${t}</li>`).join("");
+    el("foot").textContent = `Data: ${D.generated_by}. ${D.energyplus_version.replace("Program Version,", "")}`;
+  }
+
+  function renderAll() {
+    [...el("scen").children].forEach((b) => b.setAttribute("aria-pressed", b.dataset.id === scen));
+    [...el("batches").children].forEach((b) => b.setAttribute("aria-pressed", +b.dataset.i === batch));
+    kpis(); pulldown(); costTool(); handTool(); sens();
+  }
+
+  function init(data) {
+    D = data;
+    if (window.Chart) { Chart.defaults.font.family = getComputedStyle(document.body).fontFamily; Chart.defaults.font.size = 12; }
+    buildScenarioButtons(); seedhi(); assumptions(); checks(); energyTable(); compTool();
+    renderAll(); month();
+    ["tariff", "price"].forEach((id) => el(id).addEventListener("input", costTool));
+    ["twb", "tca"].forEach((id) => el(id).addEventListener("input", compTool));
+    ["hm", "ht1", "ht2", "hcp", "hq"].forEach((id) => el(id).addEventListener("input", handTool));
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const redraw = () => { renderAll(); month(); };
+    mq.addEventListener && mq.addEventListener("change", redraw);
+    new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  }
+
+  fetch("data.json").then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(init).catch((e) => {
+    el("seedhi-text").textContent = "Could not load data.json next to this page (" + e.message + "). Run studies/patna-tomato-pulldown/postprocess.py and copy dashboard/data.json here.";
+  });
+})();
+</script>
+
+</body>
+</html>

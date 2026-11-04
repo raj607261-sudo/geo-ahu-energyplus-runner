@@ -1,0 +1,6 @@
+runs/*/*
+!runs/*/in.idf
+!runs/*/eplusout.err
+!runs/*/config.json
+!runs/*/eplustbl.htm
+__pycache__/

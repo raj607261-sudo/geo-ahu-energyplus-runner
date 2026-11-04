@@ -297,7 +297,7 @@ def main():
         "hand_checks": hand_checks(base),
         "variants": res,
     }
-    main_v = {"base", "mcycle", "base_fancycle", "mcycle_fancycle"}
+    main_v = {"base", "mcycle", "base_fancycle", "mcycle_fancycle", "base_ec", "mcycle_ec"}
     for v, r in res.items():
         if v not in main_v:
             r.pop("month_hourly"); r.pop("pulldown_windows")

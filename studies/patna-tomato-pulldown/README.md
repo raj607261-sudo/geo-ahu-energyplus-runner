@@ -6,6 +6,22 @@ indirect evaporative) pre-cooler on the condenser air. A fresh 3 t batch comes i
 
 Dashboard: `docs/patna-tomato/` (GitHub Pages), source in `dashboard/index.html` + `dashboard/data.json`.
 
+## Market unit vs your design (May)
+
+Same room, same compressor, same tomato. Market = unit-cooler fans at full speed 24×7, no M-cycle.
+Your design = M-cycle on the condenser + EC unit-cooler fans (full speed with the compressor, 50 % airflow
+at 17 % power in between).
+
+| | Market | Your design |
+|---|---|---|
+| Electricity, May | 932 kWh | 430 kWh (−53.9 %) |
+| Weak M-cycle (ε 0.45) | | 445 kWh (−52.3 %) |
+| Core to 13 °C | 8.8 h | 8.8 h |
+| Room RH | 90.9 % | 93.3 % |
+| Tomato weight lost, May | 157 kg | 122 kg |
+
+M-cycle alone: −5.4 %. EC fans alone: −49.1 %. Most of the saving needs the fan control.
+
 ## Results (May, base h = 3 W/m²K)
 
 | | Standard | With M-cycle |
@@ -36,8 +52,7 @@ Fans cycling with the compressor: 398 kWh, but RH 79 % and twice the weight loss
 
 ```sh
 python3 build_idf.py                      # writes runs/<variant>/in.idf
-EPLUS=/path/to/energyplus ./run.sh base mcycle base_hlow base_hhigh mcycle_hlow mcycle_hhigh \
-      mcycle_eps45 mcycle_eps75 base_fancycle mcycle_fancycle
+EPLUS=/path/to/energyplus ./run.sh $(ls runs)
 python3 postprocess.py                    # dashboard/data.json
 python3 make_site.py                      # copies to docs/patna-tomato/
 ```

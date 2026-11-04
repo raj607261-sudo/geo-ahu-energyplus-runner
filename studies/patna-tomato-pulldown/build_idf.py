@@ -92,6 +92,9 @@ CONFIG = {
     "mcycle_min_outdoor_c": 24.0,
     # ---------------- money ----------------
     "tariff_inr_per_kwh": 8.5,
+    "ec_fans": False,             # True = EC fans: full speed with compressor, low speed in between
+    "ec_low_flow_fraction": 0.5,
+    "ec_low_power_fraction": 0.17,  # fan law gives 0.125 at half speed; +EC drive/motor losses
     "fan_cycling": False,         # False = unit-cooler fans run 24x7 (typical); True = fans cycle with compressor
 }
 
@@ -370,15 +373,25 @@ def build(c, mcycle, tag):
     P(obj("ZoneControl:Thermostat", "Cold Room Thermostat", "ColdRoom", "Dual Control Type", "ThermostatSetpoint:DualSetpoint", "Cold Room Setpoints"))
     P(obj("ZoneHVAC:EquipmentConnections", "ColdRoom", "ColdRoom Equipment", "Unit Cooler Outlet Node", "Unit Cooler Inlet Node", "ColdRoom Air Node", "ColdRoom Return Node"))
     P(obj("ZoneHVAC:EquipmentList", "ColdRoom Equipment", "SequentialLoad", "AirLoopHVAC:UnitarySystem", "Unit Cooler System", 1, 1, "", ""))
+    ec = bool(c.get("ec_fans"))
+    fan_type = "Fan:SystemModel" if ec else "Fan:OnOff"
+    noload = c["unit_cooler_airflow_m3s"] * (c["ec_low_flow_fraction"] if ec else 1.0)
     P(obj("AirLoopHVAC:UnitarySystem", "Unit Cooler System", "Load", "ColdRoom", "None", "Always On",
-          "Unit Cooler Inlet Node", "Unit Cooler Outlet Node", "Fan:OnOff", "Unit Cooler Fans", "BlowThrough", "Always Off" if c.get("fan_cycling") else "Always On",
+          "Unit Cooler Inlet Node", "Unit Cooler Outlet Node", fan_type, "Unit Cooler Fans", "BlowThrough", "Always Off" if c.get("fan_cycling") else "Always On",
           "", "", "", "Coil:Cooling:DX:SingleSpeed", "Condensing Unit DX Coil", "No", 1.0, "SensibleOnlyLoadControl", "", "",
           "SupplyAirFlowRate", c["unit_cooler_airflow_m3s"], "", "", "", "None", "", "", "", "",
-          "SupplyAirFlowRate", c["unit_cooler_airflow_m3s"], "", "", "", "", "", "No", 30, 21, "", 0, 0, "", "", "", "", "", ""))
+          "SupplyAirFlowRate", f"{noload:.4f}", "", "", "", "", "", "No", 30, 21, "", 0, 0, "", "", "", "", "", ""))
     eta = 0.45
     dp = c["unit_cooler_fan_w"] * eta / c["unit_cooler_airflow_m3s"]
-    P(obj("Fan:OnOff", "Unit Cooler Fans", "Always On", eta, f"{dp:.2f}", c["unit_cooler_airflow_m3s"], 0.85, 1.0,
-          "Unit Cooler Inlet Node", "Unit Cooler Fan Outlet Node", "", "", "Unit Cooler Fans"))
+    if ec:
+        # EC fans: full speed while the compressor runs, low speed (not off) in between
+        P(obj("Fan:SystemModel", "Unit Cooler Fans", "Always On", "Unit Cooler Inlet Node", "Unit Cooler Fan Outlet Node",
+              c["unit_cooler_airflow_m3s"], "Discrete", 0.0, f"{dp:.2f}", 0.85, 1.0, c["unit_cooler_fan_w"], "TotalEfficiencyAndPressure",
+              "", "", eta, "", "", "", "", "", "Unit Cooler Fans", 2,
+              c["ec_low_flow_fraction"], c["ec_low_power_fraction"], 1.0, 1.0))
+    else:
+        P(obj("Fan:OnOff", "Unit Cooler Fans", "Always On", eta, f"{dp:.2f}", c["unit_cooler_airflow_m3s"], 0.85, 1.0,
+              "Unit Cooler Inlet Node", "Unit Cooler Fan Outlet Node", "", "", "Unit Cooler Fans"))
     cur = curves
     P(obj("Table:IndependentVariable", "Coil Entering Wetbulb", "Linear", "Constant", min(cur["twb_grid"]), max(cur["twb_grid"]), "", "Temperature", "", "", "", *cur["twb_grid"]))
     P(obj("Table:IndependentVariable", "Condenser Entering Drybulb", "Linear", "Constant", min(cur["tc_grid"]), max(cur["tc_grid"]), "", "Temperature", "", "", "", *cur["tc_grid"]))
@@ -489,6 +502,11 @@ VARIANTS = {
     "mcycle_eps75": dict(mcycle=True, overrides={"mcycle_dewpoint_effectiveness": 0.75}),
     "base_fancycle": dict(mcycle=False, overrides={"fan_cycling": True}),
     "mcycle_fancycle": dict(mcycle=True, overrides={"fan_cycling": True}),
+    "base_ec": dict(mcycle=False, overrides={"ec_fans": True}),
+    "mcycle_ec": dict(mcycle=True, overrides={"ec_fans": True}),
+    "mcycle_ec_hlow": dict(mcycle=True, overrides={"ec_fans": True, "h_eff": 1.5}),
+    "mcycle_ec_hhigh": dict(mcycle=True, overrides={"ec_fans": True, "h_eff": 6.0}),
+    "mcycle_ec_eps45": dict(mcycle=True, overrides={"ec_fans": True, "mcycle_dewpoint_effectiveness": 0.45}),
 }
 
 
